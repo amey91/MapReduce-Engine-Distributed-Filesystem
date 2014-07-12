@@ -13,6 +13,8 @@ public class Console extends Thread{
 	String choice;
 	String choices[];
 	
+	
+	
 	@Override
 	public void run(){
 		while(true){
@@ -45,10 +47,10 @@ public class Console extends Thread{
          			if(checkFileExists(localFilePath)){
          				throw new Exception(localFilePath + ": File does not exist");
          			}
-         			
-         			//TODO call localtohdfs class object
-         			
+         			log("Uploading file to HDFS");
+         			new Thread(new LocalToHDFS(localFilePath,HDFSFilePath)).start();
          			break;
+         			
          		case("ls"):
          			if(choices.length!=2){
          				log("got " + choices.length + " arguments. Expected 2 argument.");
