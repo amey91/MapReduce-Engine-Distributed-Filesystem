@@ -11,8 +11,6 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 
-@SuppressWarnings("unused")
-
 public class Communicator {
 	
 	// accept created socket and do not close it after use

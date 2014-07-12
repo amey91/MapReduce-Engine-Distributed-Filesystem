@@ -4,7 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 
-public class Console extends Thread{
+public class ConsoleThread extends Thread{
 	/*
 	 *  TODO implement:
 	 *  ls, rm, mkdir, start, stop job, monitor

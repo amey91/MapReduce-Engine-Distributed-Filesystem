@@ -1,6 +1,8 @@
 package datanode;
 
 import java.net.ServerSocket;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.rmi.Naming;
 
 import namenode.NameNodeInterface;
@@ -14,7 +16,8 @@ public class DataNode {
 	static int jobListeningPort;
 	static ServerSocket jobSocket;
 	static ServerSocket fileSocket;
-	public static NameNodeInterface nameNode;
+	static NameNodeInterface nameNode;
+	static Path rootPath;
 	
 	public static void main(String args[]){
 		try {
@@ -29,12 +32,16 @@ public class DataNode {
 		    } catch (Exception e) {
 		      System.out.println ("HelloClient exception: " + e);
 		    }
+
+		rootPath = Paths.get(args[2]);
 		
-		new Thread(new Console()).start();
+		new Thread(new ConsoleThread()).start();
+		new Thread(new HeartbeatThread()).start();
+		new Thread(new TaskTracker()).start();
 		
 		Communicator.listenForMessages(fileSocket, null, FileRequestProcessor.class);
 		//TODO
-		// Communicator.listenForMessages(jobSocket, null, FileRequestProcessor.class);
+		// Communicator.listenForMessages(jobSocket, null, JobRequestProcessor.class);
 	}
 	
 	

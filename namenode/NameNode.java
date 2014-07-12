@@ -39,4 +39,9 @@ public class NameNode extends Thread implements NameNodeInterface {
 		// TODO Auto-generated method stub
 		
 	}
+	@Override
+	public void Heartbeat(String hostname, int port) throws RemoteException {
+		// TODO Auto-generated method stub		
+	}
+	
 }

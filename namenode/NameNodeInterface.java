@@ -13,5 +13,6 @@ public interface NameNodeInterface extends Remote{
 		// 			the intended location of each block on various mappers 
 		public String[] localToHDFS(String newDFSFileName, long fileSize)throws RemoteException;
 		public void confirmLocalToHDFS(String fileName, long[] blockSizes)throws RemoteException; 
-		public void HDFSToLocal(String fileName)throws RemoteException;
+		public void HDFSToLocal(String fileName)throws RemoteException; 
+		public void Heartbeat(String hostname, int port)throws RemoteException;
 }
