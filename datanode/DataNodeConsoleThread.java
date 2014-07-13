@@ -3,9 +3,11 @@ package datanode;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 
 import commons.Logger;
+import filesystem.FileSystemException;
 
 public class DataNodeConsoleThread extends Thread{
 	/*
@@ -100,18 +102,33 @@ public class DataNodeConsoleThread extends Thread{
 		}//end of while
 	}
 	
-	private void ls(String remoteFilePath) throws Exception{	
-		ArrayList<String> list = DataNode.nameNode.ls(remoteFilePath);
-		for(String s: list)
-			Logger.log(s);
+	private void ls(String remoteFilePath){	
+		
+		try {
+			ArrayList<String> list = DataNode.nameNode.ls(remoteFilePath);
+
+			for(String s: list)
+				Logger.log(s);
+			
+		} catch (RemoteException e) {
+			// TODO delete
+			Logger.log(e.getMessage());
+			e.printStackTrace();
+		}
 	}
 	
-	private void rm(String DFSFilePath) throws Exception{
+	private void rm(String DFSFilePath){
 		
 	}
 	
-	private void mkdir(String DFSFilePath) throws Exception{
-		DataNode.nameNode.mkdir(DFSFilePath);
+	private void mkdir(String DFSFilePath) {
+		try {
+			DataNode.nameNode.mkdir(DFSFilePath);
+		} catch (RemoteException | FileSystemException e) {
+			// TODO delete
+			Logger.log(e.getMessage());
+			e.printStackTrace();
+		}
 	}
 	
 	private boolean checkFileExists(String localFilePath){

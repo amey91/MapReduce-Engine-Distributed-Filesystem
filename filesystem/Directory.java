@@ -13,11 +13,15 @@ public class Directory {
 	public Directory(Directory parent, String directoryName) {
 		this.parentDirectory = parent;
 		this.directoryName = directoryName;
+		childDirectories = new ArrayList<Directory>();
+		files = new ArrayList<DistributedFile>();
 	}
 	
 	public Directory() {
 		this.parentDirectory = null;
 		this.directoryName = "";
+		childDirectories = new ArrayList<Directory>();
+		files = new ArrayList<DistributedFile>();
 	}
 	
 	public String getName(){
@@ -41,13 +45,13 @@ public class Directory {
 		throw new FileSystemException("Invalid Path");
 	}
 	
-	public void MakeDirectory(String directoryName) throws FileSystemException{
+	public void MakeDirectory(String newDirectoryName) throws FileSystemException{
 			
-		if(isPresent(directoryName))
+		if(isPresent(newDirectoryName))
 			throw new FileSystemException("Directory Already Exists");
 		
 		
-		Directory childDirectory = new Directory(this, directoryName);
+		Directory childDirectory = new Directory(this, newDirectoryName);
 		childDirectories.add(childDirectory);
 		
 	}
