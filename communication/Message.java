@@ -13,6 +13,8 @@ public class Message implements Serializable{
 	
 	public String fileName;
 	
+	public long fileSize;
+	
 	public Message(String type) {
 		this.type = type;
 	}

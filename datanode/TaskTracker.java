@@ -8,6 +8,6 @@ public class TaskTracker extends Thread {
 	@Override
 	public void run(){
 
-		Communicator.listenForMessages(DataNode.fileSocket, null, JobRequestProcessor.class);
+		Communicator.listenForMessages(DataNode.jobSocket, null, JobRequestProcessor.class);
 	}
 }

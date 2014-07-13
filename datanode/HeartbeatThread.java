@@ -1,5 +1,6 @@
 package datanode;
 
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.rmi.RemoteException;
@@ -11,10 +12,11 @@ public class HeartbeatThread extends Thread{
 		while(true)
 		{
 			try {
-				DataNode.nameNode.Heartbeat(InetAddress.getLocalHost().getHostAddress(), DataNode.jobListeningPort);
-
+				DataNode.nameNode.Heartbeat(Inet4Address.getLocalHost().getHostAddress(), 
+						DataNode.fileListeningPort, DataNode.jobListeningPort);
+				
 				//TODO check this sleep value
-				Thread.sleep(1000);
+				Thread.sleep(2000);
 				
 			} catch (RemoteException | UnknownHostException | InterruptedException e) {
 				// TODO delete

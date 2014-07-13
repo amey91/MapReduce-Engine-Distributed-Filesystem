@@ -10,6 +10,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import commons.Logger;
+
 
 public class Communicator {
 	
@@ -50,31 +52,25 @@ public class Communicator {
 		return newObj;
 	}
 	
-	public static String[] addressToIPPort(String address) throws UnknownHostException	{
-		if(address == null || address == ""){
-			throw new UnknownHostException("Invalid Network Address");
-		}
-		return address.split(":");
-		
-	}
+	
 	
 	// create server socket, keep listening for requests, create thread for handling message
-	public static void listenForMessages(ServerSocket fileSocket, Object input, Class<?> T)  {
-		//initialize listening socket
-		ServerSocket listeningSocket = fileSocket;
+	public static void listenForMessages(ServerSocket listeningSocket, Object input, Class<?> T)  {
+		//
 		
 		Constructor<?> constructorNew = null;
 		try {
 			constructorNew = T. getConstructor(Object.class, Socket.class);
-			System.out.println(T.getName()+ " listening on "+ listeningSocket.getInetAddress().getHostAddress()+ ":"+ listeningSocket.getLocalPort());
+			 	
+			Logger.log(T.getName()+ " listening on "+ listeningSocket.getInetAddress().getHostAddress()+ ":"+ listeningSocket.getLocalPort());
 
 		} catch (NoSuchMethodException e1) {
-			System.out.println("Method call failed or you entered invalid data.");
+			Logger.log("Method call failed or you entered invalid data.");
 			return;
 		}
 		
 		while(true){
-			// setup the heartbeat socket for the server that listens to clients 
+			// setup the socket for the server that listens to clients 
 			try {
 				System.out.println(T.getName() + " waiting for new message...");
 				Socket clientSocket = listeningSocket.accept();
@@ -82,6 +78,7 @@ public class Communicator {
 				new Thread(instance).start();
 				
 			} catch (IOException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+				e.printStackTrace();
 				System.out.println("Error while opening port at registry server");				
 			}
 		}//end of true	
