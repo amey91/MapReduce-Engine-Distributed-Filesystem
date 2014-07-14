@@ -1,8 +1,13 @@
 package communication;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
@@ -11,6 +16,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 import commons.Logger;
+import conf.Constants;
 
 
 public class Communicator {
@@ -52,7 +58,25 @@ public class Communicator {
 		return newObj;
 	}
 	
-	
+	public static void receiveFile(Socket socket, String filePath, long fileSize) throws IOException{
+		FileOutputStream fos = new FileOutputStream(filePath);
+	    BufferedOutputStream bos = new BufferedOutputStream(fos);
+	    
+
+	    byte[] bytearray = new byte[1024];
+	    InputStream is = socket.getInputStream();
+
+	    long bytesLeft = fileSize;
+	    
+	    while(bytesLeft>0){
+	    	int bytesRead = is.read(bytearray, 0, bytearray.length);
+	        bos.write(bytearray, 0, bytesRead);
+	        System.out.println(" "+bytesRead);;
+	        bytesLeft -= bytesRead;
+		}
+	    bos.close();
+	    fos.close();
+	}
 	
 	// create server socket, keep listening for requests, create thread for handling message
 	public static void listenForMessages(ServerSocket listeningSocket, Object input, Class<?> T)  {
@@ -82,5 +106,29 @@ public class Communicator {
 				System.out.println("Error while opening port at registry server");				
 			}
 		}//end of true	
+	}
+
+	public static long sendStream(Socket[] socket, BufferedInputStream bis,
+			long streamLength) throws IOException {
+		
+		long totalTransferred = 0;
+		byte[] byteArray = new byte[1024];
+
+		OutputStream os[] = new OutputStream[socket.length];
+		
+		while( totalTransferred < streamLength)
+		{
+			int left = (int) (streamLength-totalTransferred);
+			int bytesRead = bis.read(byteArray, 0, Math.min(byteArray.length, left) );
+			
+			if(bytesRead==0)
+				break;
+			
+			Logger.log("sending " + bytesRead);
+			for(int i=0; i<os.length; i++)
+				os[i].write(byteArray, 0, bytesRead);
+			totalTransferred += bytesRead;
+		}
+		return totalTransferred;
 	}	
 }

@@ -29,8 +29,10 @@ public class DataNode {
 	static Object freeSpaceLock = new Object();
 	public static long sizeOfStoredFiles = 0;
 	static Object sizeOfFileLock = new Object();
+
+	static FileCopyThread ftThread;
 	
-	public static void main(String args[]) {
+	static void main(String args[]) {
 		
 		if(args.length!=3)
 		{
@@ -67,6 +69,9 @@ public class DataNode {
 		new Thread(new HeartbeatThread()).start();
 		new Thread(new TaskTracker()).start();
 		new Thread(new FileSizeThread()).start();
+		
+		ftThread = new FileCopyThread();
+		ftThread.start();
 		
 		Communicator.listenForMessages(fileSocket, null, FileRequestProcessor.class);
 		//TODO

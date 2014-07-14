@@ -5,9 +5,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.Socket;
 
+import namenode.NameNode;
 import commons.AddressToIPPort;
 import commons.Logger;
 import communication.Communicator;
@@ -44,10 +44,13 @@ public class LocalToHDFS extends Thread {
 			}
 
 			// divide the file into smaller blocks
-			long[] result = divideAndSendFile(localFilePath, no_of_blocks, fileBlocks);
-			DataNode.nameNode.confirmLocalToHDFS(DataNode.key, HDFSFilePath, fileBlocks, result);
+			long[] splitSizes = getDivisionSizes(localFilePath, no_of_blocks);
+			DataNode.ftThread.add(localFilePath, HDFSFilePath, fileBlocks, splitSizes);
 			
-		} catch (InterruptedException | FileSystemException | IOException e) {
+			//long[] result = divideAndSendFile(localFilePath, no_of_blocks, fileBlocks);
+			//DataNode.nameNode.confirmLocalToHDFS(DataNode.key, HDFSFilePath, fileBlocks, result);
+			
+		} catch (FileSystemException | IOException e) {
 			// TODO delete 
 			Logger.log(e.getMessage());
 			e.printStackTrace();
@@ -97,7 +100,6 @@ public class LocalToHDFS extends Thread {
 		for(int block = 0; block<no_of_blocks;block++)
 		{
 			Socket socket [] = new Socket[Constants.REPLICATION_FACTOR]; 
-			OutputStream os[] = new OutputStream[Constants.REPLICATION_FACTOR];
 
 			String[] dataNodeLocations = fileBlocks[block].getNodeLocations();
 			// write each block to its destination
@@ -111,22 +113,11 @@ public class LocalToHDFS extends Thread {
 				sendMessage.fileSize = fileSizes[block];
 
 				Communicator.sendMessage(socket[i], sendMessage);
-				os[i] = socket[i].getOutputStream();
 			}
+			
 
-			long totalTransferred = 0;
-			byte[] byteArray = new byte[1024];
-
-			while( totalTransferred < fileSizes[block])
-			{
-				int left = (int) (fileSizes[block]-totalTransferred);
-				int bytesRead = bis.read(byteArray, 0, Math.min(byteArray.length, left) );
-				Logger.log("sending " + bytesRead);
-				for(int i=0;i<Constants.REPLICATION_FACTOR;i++)
-					os[i].write(byteArray, 0, bytesRead);
-				totalTransferred += bytesRead;
-			}
-			fileSizes[block] = totalTransferred;
+			fileSizes[block] = Communicator.sendStream(socket, bis, fileSizes[block]);
+			
 		}
 		bis.close();
 		return fileSizes;
