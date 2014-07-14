@@ -1,17 +1,24 @@
 package namenode;
 
-import java.util.Calendar;
+import java.util.ArrayList;
 import java.util.Iterator;
+
+import commons.Logger;
+
+import filesystem.FileSystemException;
 
 public class DataNodeInfo implements Comparable<DataNodeInfo>, Iterable<DataNodeInfo>{
 	
 	private String id;
-	private long cumulativeSizeOfFiles;
+	private long sizeOfStoredFiles;
 	private long lastSeen;
+	private long freeSpace;
+	private ArrayList<String> fileProxyList;
 	
 	public DataNodeInfo(String id){
 		this.setId(id);
 		this.lastSeen = System.currentTimeMillis();
+		fileProxyList = new ArrayList<String>();
 	}
 	
 	/* getters and setters for this class */
@@ -28,12 +35,12 @@ public class DataNodeInfo implements Comparable<DataNodeInfo>, Iterable<DataNode
 		this.id = id;
 	}
 
-	public long getCumulativeSizeOfFiles() {
-		return cumulativeSizeOfFiles;
+	public long getsizeOfStoredFiles() {
+		return sizeOfStoredFiles;
 	}
 
-	public void setCumulativeSizeOfFiles(long cumulativeSizeOfFiles) {
-		this.cumulativeSizeOfFiles = cumulativeSizeOfFiles;
+	public void setsizeOfStoredFiles(long cumulativeSizeOfFiles) {
+		this.sizeOfStoredFiles = cumulativeSizeOfFiles;
 	}
 	
 	public void setLastSeen(long a){
@@ -43,13 +50,21 @@ public class DataNodeInfo implements Comparable<DataNodeInfo>, Iterable<DataNode
 	public long getLastSeen(){
 		return this.lastSeen;
 	}
+	
+	public long getFreeSpace() {
+		return freeSpace;
+	}
+
+	public void setFreeSpace(long freeSpace) {
+		this.freeSpace = freeSpace;
+	}
 	/* end of getters and setters for this class */
 	
 	@Override
 	public int compareTo(DataNodeInfo in) {
-		if(cumulativeSizeOfFiles < in.cumulativeSizeOfFiles)
+		if(sizeOfStoredFiles < in.sizeOfStoredFiles)
 			return -1;
-		else if(cumulativeSizeOfFiles > in.cumulativeSizeOfFiles)
+		else if(sizeOfStoredFiles > in.sizeOfStoredFiles)
 			return 1;
 		return 0;
 	}
@@ -58,6 +73,28 @@ public class DataNodeInfo implements Comparable<DataNodeInfo>, Iterable<DataNode
 	public Iterator<DataNodeInfo> iterator() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public void addFileProxy(String newDFSFileName) {
+		fileProxyList.add(newDFSFileName);
+	}
+	public void deleteFileProxy(String DFSFileName){
+		fileProxyList.remove(DFSFileName);
+	}
+
+	public void shutDown() {
+
+		// TODO Failure! Handle Files placed on this machine
+		try
+		{
+			for(String proxy: fileProxyList)
+				NameNode.fs.RemoveFileProxy(proxy);
+		} catch(FileSystemException e){
+			
+			//TODO delete
+			Logger.log(e.getMessage());
+			e.printStackTrace();
+		}
 	}
 	
 }

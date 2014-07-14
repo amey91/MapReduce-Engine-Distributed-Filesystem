@@ -25,6 +25,10 @@ public class DataNode {
 	static NameNodeInterface nameNode;
 	static Path rootPath;
 	static String key;
+	public static long freeSpace=0;
+	static Object freeSpaceLock = new Object();
+	public static long sizeOfStoredFiles = 0;
+	static Object sizeOfFileLock = new Object();
 	
 	public static void main(String args[]) {
 		
@@ -62,6 +66,7 @@ public class DataNode {
 		new Thread(new DataNodeConsoleThread()).start();
 		new Thread(new HeartbeatThread()).start();
 		new Thread(new TaskTracker()).start();
+		new Thread(new FileSizeThread()).start();
 		
 		Communicator.listenForMessages(fileSocket, null, FileRequestProcessor.class);
 		//TODO
@@ -74,4 +79,30 @@ public class DataNode {
 		DataNode.myIp = a;
 		return a+":"+fileListeningPort+":"+jobListeningPort;
 	}
+	
+	
+	public static void setFreeSpace(long a){
+		synchronized(DataNode.freeSpaceLock){
+			DataNode.freeSpace = a;
+		}
+	}
+	
+	public static long getFreeSpace(){
+		synchronized(DataNode.freeSpaceLock){
+			return DataNode.freeSpace;
+		}
+	}
+	
+	public static void setSizeOfFilesStored(long a){
+		synchronized(DataNode.sizeOfFileLock){
+			DataNode.sizeOfStoredFiles =a;
+		}
+	}
+	
+	public static long getSizeOfFilesStored(){
+		synchronized(DataNode.sizeOfFileLock){
+			return DataNode.sizeOfStoredFiles;
+		}
+	}
+	
 }

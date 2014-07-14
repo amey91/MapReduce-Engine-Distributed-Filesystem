@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.rmi.RemoteException;
 
 import commons.AddressToIPPort;
 import commons.Logger;
@@ -35,7 +34,7 @@ public class LocalToHDFS extends Thread {
 		int no_of_blocks = 1;
 		try {
 				
-			fileBlocks = DataNode.nameNode.localToHDFS(HDFSFilePath, file.length());
+			fileBlocks = DataNode.nameNode.localToHDFS(DataNode.key, HDFSFilePath, file.length());
 			no_of_blocks =  fileBlocks.length;
 			
 			Logger.log("File block received by origin: ");
@@ -44,20 +43,15 @@ public class LocalToHDFS extends Thread {
 				Logger.log("BlockFileName:"+f.getBlockFileName()+ " | Nodes: "+res[0]+"|"+res[1]+"|"+res[2]);
 			}
 
-		} catch (RemoteException e) {
+			// divide the file into smaller blocks
+			long[] result = divideAndSendFile(localFilePath, no_of_blocks, fileBlocks);
+			DataNode.nameNode.confirmLocalToHDFS(DataNode.key, HDFSFilePath, fileBlocks, result);
+			
+		} catch (InterruptedException | FileSystemException | IOException e) {
 			// TODO delete 
+			Logger.log(e.getMessage());
 			e.printStackTrace();
 		}
-
-		// divide the file into smaller blocks
-		long[] result;
-		try {
-			result = divideAndSendFile(localFilePath, no_of_blocks, fileBlocks);
-			DataNode.nameNode.confirmLocalToHDFS(HDFSFilePath, fileBlocks, result);
-		} catch (InterruptedException | IOException | FileSystemException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
 	}
 
 	private long[] getDivisionSizes(String localFilePath, int no_of_blocks) throws IOException{

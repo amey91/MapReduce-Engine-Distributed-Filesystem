@@ -1,15 +1,22 @@
 package commons;
 
 
+import java.awt.List;
 import java.io.BufferedOutputStream;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.Socket;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import filesystem.Directory;
 
 public class TestClient {
   public static void main(String[] argv) throws Exception {
-    Socket sock = new Socket("127.0.0.1", 23456);
-    
+    /*Socket sock = new Socket("127.0.0.1", 23456);    
     
     byte[] mybytearray = new byte[1024];
     InputStream is = sock.getInputStream();
@@ -27,6 +34,28 @@ public class TestClient {
 	}
     bos.close();
     sock.close();
+*/
+
+    ArrayList<String> classNames=new ArrayList<String>();
+    ZipInputStream zip=new ZipInputStream(new FileInputStream("C:/exp.jar"));
+    for(ZipEntry entry=zip.getNextEntry();entry!=null;entry=zip.getNextEntry())
+        if(entry.getName().endsWith(".class") && !entry.isDirectory()) {
+            // This ZipEntry represents a class. Now, what class does it represent?
+            StringBuilder className=new StringBuilder();
+            for(String part : entry.getName().split("/")) {
+                if(className.length() != 0)
+                    className.append(".");
+                className.append(part);
+                if(part.endsWith(".class"))
+                    className.setLength(className.length()-".class".length());
+            }
+            classNames.add(className.toString());
+        }
+    zip.close();
+   JarClassLoader jcl =  new JarClassLoader("C:/exp.jar");
+   Class<?> c = jcl.loadClass(classNames.get(3));
+   Directory d = (Directory) c.newInstance();
+   d.getClass();
   }
 }
 

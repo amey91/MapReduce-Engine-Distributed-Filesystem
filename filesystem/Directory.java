@@ -3,11 +3,14 @@ package filesystem;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import commons.Logger;
+
 public class Directory {
 	String directoryName;
 	Directory parentDirectory;
 	ArrayList<Directory> childDirectories;
 	ArrayList<DistributedFile> files;
+	ArrayList<String> fileProxy;
 	
 	
 	public Directory(Directory parent, String directoryName) {
@@ -36,19 +39,28 @@ public class Directory {
 	}
 	
 	public Directory getSubDirectory(String[] pathNodes) throws FileSystemException{
-		if(pathNodes.length==0)
+		
+		int pos = 0;
+		while( pos<pathNodes.length && pathNodes[pos].trim().equals(""))
+			pos++;
+		
+		if(pos == pathNodes.length)
 			return this;
+		
+		Logger.log("gh: " + pos);
+		
 		for(Directory d: childDirectories)
-			if(d.getName() == pathNodes[0])
-				return getSubDirectory(Arrays.copyOfRange(pathNodes, 1, pathNodes.length));
-
+			if(d.getName().equals(pathNodes[pos]))
+				return d.getSubDirectory(Arrays.copyOfRange(pathNodes, pos+1, pathNodes.length));
+		
+		Logger.log("throwing Exception" + pathNodes[pos] );
 		throw new FileSystemException("Invalid Path");
 	}
 	
 	public void MakeDirectory(String newDirectoryName) throws FileSystemException{
 			
-		if(isPresent(newDirectoryName))
-			throw new FileSystemException("Directory Already Exists");
+		if(isPresent(newDirectoryName, true))
+			throw new FileSystemException("File/Directory Already Exists");
 		
 		
 		Directory childDirectory = new Directory(this, newDirectoryName);
@@ -56,36 +68,47 @@ public class Directory {
 		
 	}
 	
-	public void AddFile(String filePath, DistributedFile file) throws FileSystemException{
+	public void AddFile(String fileName, DistributedFile file) throws FileSystemException{
 		
-		if(isPresent(filePath))
-			throw new FileSystemException("File Already Exists");
+		if(isPresent(fileName, false))
+			throw new FileSystemException("File/Directory Already Exists");
+		
+
+		if(!isPresent(fileName, true))
+			throw new FileSystemException("Internal Error! Proxy for the file not found!");
+		
+		fileProxy.remove(fileName);
 		
 		file.parent = this;
-		file.fileName = filePath;
+		file.fileName = fileName;
 		files.add(file);
 	}
-	private Boolean isPresent(String FileOrDirectoryName)
+	
+	private Boolean isPresent(String FileOrDirectoryName, Boolean includeProxy)
 	{
 		for(DistributedFile f: files)
-			if(f.getFileName() == FileOrDirectoryName)
+			if(f.getFileName().equals(FileOrDirectoryName) )
+				return true;
+
+		for(Directory d: childDirectories)
+			if(d.getName().equals(FileOrDirectoryName))
 				return true;
 		
-		for(Directory d: childDirectories)
-			if(d.getName() == FileOrDirectoryName)
-				return true;
+		if(includeProxy)
+			for(String s: fileProxy)
+				if(s.equals(FileOrDirectoryName))
+					return true;
 		
 		return false;
 	}
-	private Boolean isEmpty()
-	{
-		return childDirectories.size() == 0 && files.size() == 0;
+	private Boolean isEmpty(){
+		return childDirectories.size() == 0 && files.size() == 0 && fileProxy.size() == 0;
 	}
 	
-	public void RemoveFileOrDirectory(String filePath) throws FileSystemException {
+	public void RemoveFileOrDirectory(String fileName) throws FileSystemException {
 		int index = 0;
 		for(DistributedFile f: files){
-			if(f.fileName == filePath){
+			if(f.fileName.equals(fileName)){
 				f.delete();
 				files.remove(index);
 				return;
@@ -94,7 +117,7 @@ public class Directory {
 			
 		index = 0;
 		for(Directory d: childDirectories) {
-			if(d.getName() == filePath) {
+			if(d.getName().equals(fileName)) {
 				if(d.isEmpty()) {
 					childDirectories.remove(index);
 					return;
@@ -109,7 +132,7 @@ public class Directory {
 		
 	}
 
-	public ArrayList<String> getList(String pathToDirectory) throws FileSystemException {
+	public ArrayList<String> getList() throws FileSystemException {
 		
 		ArrayList<String> returnList = new ArrayList<String>();
 		for(Directory d: childDirectories)
@@ -117,7 +140,24 @@ public class Directory {
 		
 		for(DistributedFile f: files)
 			returnList.add("FILE " + f.getFileName());
-		
+		Logger.log("lendir: " + (childDirectories.size()+files.size()));
 		return returnList;
 	}
+
+	public void AddFileProxy(String fileName) throws FileSystemException {
+
+		if(isPresent(fileName, true))
+			throw new FileSystemException("File/Directory already exists");
+		
+		fileProxy.add(fileName);
+	}
+	
+	public void RemoveFileProxy(String fileName) throws FileSystemException {
+
+		if(!fileProxy.contains(fileName))
+			throw new FileSystemException("Proxy doesn't exists");
+		
+		fileProxy.remove(fileName);
+	}
+	
 }

@@ -9,8 +9,10 @@ public class TimeOutThread extends Thread{
 			int i = 0;
 			for(DataNodeInfo d : NameNode.dataNodeList){
 				if(Math.abs(d.getLastSeen()-System.currentTimeMillis())>10000){
-					// TODO Failure! Handle Files placed on this machine
 					Logger.log("Client "+ d.getId() + " TIMED OUT. Deleteing it.");
+					
+					d.shutDown();
+					
 					NameNode.dataNodeList.remove(i);
 					NameNode.displayDataNodes();
 					break;

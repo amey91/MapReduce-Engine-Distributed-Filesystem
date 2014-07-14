@@ -1,13 +1,10 @@
 package datanode;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.FileInputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.OutputStream;
 import java.net.Socket;
 
 import commons.Logger;
@@ -53,7 +50,16 @@ public class FileRequestProcessor extends Thread{
 
 			}
 			else if(inMessage.type.equals("remove")){
-				//TODO
+				String blockName = inMessage.fileName;
+				String blockPath = DataNode.rootPath+"/"+blockName;
+				File fileTemp = new File(blockPath);
+				if (fileTemp.exists()){
+				    Logger.log("From delete File: " + inMessage.fileName);
+					fileTemp.delete();
+					DataNode.nameNode.ConfirmDeletion(blockName, DataNode.key);
+				}
+				else
+					DataNode.nameNode.ConfirmDeletion(blockName, DataNode.key);
 			}
 		}
 		catch(IOException | ClassNotFoundException | InterruptedException e){

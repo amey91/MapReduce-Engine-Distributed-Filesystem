@@ -1,19 +1,14 @@
 package namenode;
 
 import java.rmi.RemoteException;
-import java.rmi.Naming;
 import java.rmi.registry.Registry;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.xml.soap.Node;
 
 import commons.Logger;
-import conf.Constants;
+import filesystem.DeleteFileThread;
 import filesystem.DistributedFile;
 import filesystem.FileBlock;
 import filesystem.FileSystem;
@@ -25,29 +20,27 @@ public class NameNode extends Thread implements NameNodeInterface {
 	public static ArrayList<DataNodeInfo> dataNodeList = new ArrayList<DataNodeInfo>();
 	
 	public static int currentBlockNumber = 0;
-	FileSystem fs = new FileSystem();
+	public static DeleteFileThread deleteThread;
 	
-	public ArrayList<String> ls(String dirPath)throws RemoteException{
-		// TODO change this
-		try {
-			return fs.ReturnFileList(dirPath);
-		} catch (FileSystemException e) {
-			// TODO delete
-			e.printStackTrace();
-		}
-		return null;
+	static FileSystem fs = new FileSystem();
+	
+	public ArrayList<String> ls(String dirPath)throws RemoteException, FileSystemException{
+		ArrayList<String> list =  fs.ReturnFileList(dirPath);
+		for(String s:list)
+			Logger.log("In Path List: "+s);
+		return list;
 	}
 	public void mkdir(String newDirName)throws RemoteException, FileSystemException{
 		fs.MakeDirectory(newDirName);
 	}
-	public int rm(String dirPath)throws RemoteException{
-		// TODO change this
-		return -1;
+	public void rm(String dirPath)throws RemoteException, FileSystemException{
+		fs.RemoveFile(dirPath);
 	}
 	// @return: a list of strings containing the blocks and 
 	// 			the intended location of each block on various mappers 
-	public FileBlock[] localToHDFS(String newDFSFileName, long fileSize)throws RemoteException{
+	public FileBlock[] localToHDFS(String key, String newDFSFileName, long fileSize)throws RemoteException, FileSystemException{
 		// figure out number of blocks required.
+		//TODO add check for valid newDFSFileName
 		long size1 = fileSize/conf.Constants.MIN_BLOCK_SIZE;
 		long size2 = NameNode.dataNodeList.size();
 		
@@ -57,15 +50,24 @@ public class NameNode extends Thread implements NameNodeInterface {
 		if(fileSize<=conf.Constants.MIN_BLOCK_SIZE)
 			noOfBlocks = 1;
 		
+		fs.InsertFileProxy(newDFSFileName);
+		
+		for(DataNodeInfo d : NameNode.dataNodeList)
+			if(d.getId().equals(key))
+				d.addFileProxy(newDFSFileName);
 		// determine where these blocks will be placed
 		// take the blocks which currently store the lowest values
-		
 		return getFileAllocation(newDFSFileName,(int)noOfBlocks); 
 		
 	}
-	public void confirmLocalToHDFS(String fileName, FileBlock[] blocks, long[] blockSizes)throws RemoteException, FileSystemException{
+	public void confirmLocalToHDFS(String clientKey, String fileName, FileBlock[] blocks, long[] blockSizes)throws RemoteException, FileSystemException{
+		//TODO update datanodeinfo
 		DistributedFile file = new DistributedFile(blocks);
 		fs.InsertFile(fileName, file);
+		
+		for(DataNodeInfo d : NameNode.dataNodeList)
+			if(d.getId().equals(clientKey))
+				d.deleteFileProxy(fileName);
 	}
 	// TODO 
 	public void HDFSToLocal(String fileName)throws RemoteException{
@@ -87,12 +89,14 @@ public class NameNode extends Thread implements NameNodeInterface {
 		Logger.log("New datanode added: "+ myKey);
 	}
 	@Override
-	public void Heartbeat(String hostname, int filePort, int jobPort) throws RemoteException {
-			String clientKey = hostname+":"+filePort+":"+jobPort;
-			Logger.log("Got heartbeat for: "+clientKey);
+	public void Heartbeat(String clientKey, long sizeOfStoredFiles, long freeSpace) throws RemoteException {
+			
+			//Logger.log("Got heartbeat for: "+clientKey);
 			for(DataNodeInfo d : NameNode.dataNodeList){
 				if(d.getId().equals(clientKey))
 					d.setLastSeen(System.currentTimeMillis());
+					d.setFreeSpace(freeSpace);
+					d.setsizeOfStoredFiles(sizeOfStoredFiles);
 			}
 	}
 	
@@ -114,6 +118,8 @@ public class NameNode extends Thread implements NameNodeInterface {
             System.err.println("Server ready");
             new Thread(new NameNodeConsoleThread()).start();
             new Thread(new TimeOutThread()).start();
+            deleteThread =  new DeleteFileThread();
+            deleteThread.start();
 		} catch(Exception e){
 			System.out.println("Server exception: " + e.toString());
 			e.printStackTrace();
@@ -122,7 +128,7 @@ public class NameNode extends Thread implements NameNodeInterface {
 	}
 	public static void displayDataNodes() {
 		for(DataNodeInfo node : dataNodeList){
-			Logger.log("Key: "+ node.getId() + " | currently storing " + node.getCumulativeSizeOfFiles() + " bytes");
+			Logger.log("Key: "+ node.getId() + " | STORING: " + node.getsizeOfStoredFiles() + " | FREE: "+ node.getFreeSpace());
 		}
 		
 	}
@@ -133,7 +139,7 @@ public class NameNode extends Thread implements NameNodeInterface {
 		Collections.sort(dataNodeList);
 		Logger.log("Nodes after sorting: ");
 		for(DataNodeInfo s: dataNodeList)
-			Logger.log(s.getId()+ " | " + s.getCumulativeSizeOfFiles());
+			Logger.log(s.getId()+ " | Stores: " + s.getsizeOfStoredFiles() +" | FREE: "+ s.getFreeSpace());
 		
 		int iter = 0;
 		FileBlock[] allocation = new FileBlock[no_of_blocks];
@@ -167,6 +173,12 @@ public class NameNode extends Thread implements NameNodeInterface {
 			
 		}
 		return allocation;
+	}
+	@Override
+	public void ConfirmDeletion(String blockName, String nodeLocation)
+			throws RemoteException {
+		deleteThread.remove(blockName, nodeLocation);
+		
 	}
 
 }

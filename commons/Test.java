@@ -18,5 +18,9 @@ public class Test {
 		Logger.log(System.currentTimeMillis()+"");
 		Thread.sleep(100);
 		Logger.log(System.currentTimeMillis()+"");	
+		
+		String lll = "/bib.txt";
+		String[] llll = lll.trim().split("/");
+		Logger.log(llll[0].length() +"" ) ;
 	}
 }

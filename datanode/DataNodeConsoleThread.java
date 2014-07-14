@@ -22,7 +22,8 @@ public class DataNodeConsoleThread extends Thread{
 	public void run(){
 		while(true){
 			try{
-				log("Please enter one of the following: (No spaces allowed in file name)"
+				log(	  "\n=================================================================="
+						+ "\nPlease enter one of the following: (No spaces allowed in file name)"
 						+ "\n localToHDFS <localFilePath> <HDFSFilePath>"
 						+ "\n ls <folderPath>"
 						+ "\n rm <fileName>"
@@ -66,6 +67,7 @@ public class DataNodeConsoleThread extends Thread{
          				log("got " + choices.length + " arguments. Expected 2 arguments");
          				throw new Exception("Wrong number of arguments!");
          			}
+         			rm(choices[1]);
          			break;
          		case("mkdir"):
          			if(choices.length!=2){
@@ -79,21 +81,23 @@ public class DataNodeConsoleThread extends Thread{
          				log("got " + choices.length + " arguments. Expected 2 arguments");
          				throw new Exception("Wrong number of arguments!");
          			}
-        			 break;
+         			// TODO
          		case("stopjob"):
          			if(choices.length!=2){
          				log("got " + choices.length + " arguments. Expected 2 arguments");
          				throw new Exception("Wrong number of arguments!");
          			}
+         			// TODO
         			 break;
          		case("monitor"):
          			if(choices.length!=2){
          				log("got " + choices.length + " arguments. Expected 2 arguments");
          				throw new Exception("Wrong number of arguments!");
          			}
+         			// TODO
         			 break;
          		default:
-         			break;
+         			throw new Exception("Wrong input detected! ");
          		}
 				
 			} catch(Exception e){
@@ -110,15 +114,23 @@ public class DataNodeConsoleThread extends Thread{
 			for(String s: list)
 				Logger.log(s);
 			
-		} catch (RemoteException e) {
+		} catch (RemoteException | FileSystemException e) {
 			// TODO delete
 			Logger.log(e.getMessage());
 			e.printStackTrace();
 		}
 	}
-	
+
 	private void rm(String DFSFilePath){
-		
+
+		try {
+			DataNode.nameNode.rm(DFSFilePath);
+		} catch (RemoteException|FileSystemException e) {
+			// TODO delete
+			Logger.log(e.getMessage());
+			e.printStackTrace();
+		} 
+
 	}
 	
 	private void mkdir(String DFSFilePath) {
