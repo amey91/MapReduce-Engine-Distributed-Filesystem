@@ -54,7 +54,7 @@ public class FileCopyThread extends Thread{
 	}
 	
 	private Boolean processSendingEntity(SendingEntity e){
-		
+		//TODO 0  in separate thread?
 		try
 		{
 			Socket socket [] = new Socket[1]; 
