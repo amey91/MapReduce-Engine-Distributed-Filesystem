@@ -53,7 +53,7 @@ public class TestClient {
         }
     zip.close();
    JarClassLoader jcl =  new JarClassLoader("C:/exp.jar");
-   Class<?> c = jcl.loadClass(classNames.get(3));
+   Class<?> c = jcl.loadClass(classNames.get(3)); 
    Directory d = (Directory) c.newInstance();
    d.getClass();
   }

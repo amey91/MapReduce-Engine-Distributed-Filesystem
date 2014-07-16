@@ -2,16 +2,21 @@ package datanode;
 
 import commons.Logger;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+import namenode.DataNodeInfo;
 import namenode.NameNodeInterface;
 import communication.Communicator;
+import communication.Message;
 
 public class DataNode {
 	/*
@@ -30,9 +35,13 @@ public class DataNode {
 	public static long sizeOfStoredFiles = 0;
 	static Object sizeOfFileLock = new Object();
 
-	static FileCopyThread ftThread;
+	static FileCopyThread fcThread;
+	static DataNodeConsoleThread consoleThread;
+	static HeartbeatThread hbThread;
+	static FileSizeThread fsThread;
+	static TaskTracker taskTrackerThread;
 	
-	static void main(String args[]) {
+	public static void main(String args[]) {
 		
 		if(args.length!=3)
 		{
@@ -61,17 +70,21 @@ public class DataNode {
 	        
 		    } catch (Exception e) {
 		      System.out.println ("HelloClient exception: " + e);
+		      System.exit(1);
 		    }
 
 		rootPath = Paths.get(args[0]);
 		
-		new Thread(new DataNodeConsoleThread()).start();
-		new Thread(new HeartbeatThread()).start();
-		new Thread(new TaskTracker()).start();
-		new Thread(new FileSizeThread()).start();
-		
-		ftThread = new FileCopyThread();
-		ftThread.start();
+		consoleThread = new DataNodeConsoleThread();
+		consoleThread.start();
+		hbThread = new HeartbeatThread();
+		hbThread.start();
+		taskTrackerThread = new TaskTracker();
+		taskTrackerThread.start();
+		fsThread = new FileSizeThread();
+		fsThread.start();
+		fcThread = new FileCopyThread();
+		fcThread.start();
 		
 		Communicator.listenForMessages(fileSocket, null, FileRequestProcessor.class);
 		//TODO
@@ -109,5 +122,59 @@ public class DataNode {
 			return DataNode.sizeOfStoredFiles;
 		}
 	}
-	
+
+	public static void reset() {
+		//required to make sure that the thread is not killing itself
+		Logger.log("reset1");
+		Message m = new Message("reset");
+		try {
+			Communicator.sendMessage(Communicator.CreateDataSocket(DataNode.key), m);
+			Thread.sleep(1000000);
+		} catch (InterruptedException|IOException e){
+			//TODO delete
+			Logger.log(e.getMessage());
+		}
+	}
+
+	@SuppressWarnings("deprecation")
+	public static void resetAllThreads() {
+		Logger.log("reset2");
+		
+		// will never called from the threads
+		fcThread.stop();
+		consoleThread.stop();
+		hbThread.stop();
+		fsThread.stop();
+		taskTrackerThread.stop();
+		File folder = new File(DataNode.rootPath.toString());
+		File[] listOfFiles = folder.listFiles();
+		
+		if(listOfFiles==null){
+			Logger.log("FILE DOES NOT EXIST OR WRONG PATH");
+			System.exit(0);
+		}
+		DataNode.setFreeSpace(folder.getFreeSpace());
+		for (int i = 0; i < listOfFiles.length; i++) {
+			listOfFiles[i].delete();
+		}
+		
+		consoleThread = new DataNodeConsoleThread();
+		consoleThread.start();
+		hbThread = new HeartbeatThread();
+		hbThread.start();
+		taskTrackerThread = new TaskTracker();
+		taskTrackerThread.start();
+		fsThread = new FileSizeThread();
+		fsThread.start();
+		fcThread = new FileCopyThread();
+		fcThread.start();
+		
+        try {
+			nameNode.register(key);
+		} catch (RemoteException e) {
+			// TODO try again?
+			Logger.log("Couldn't re register myself");
+			System.exit(0);
+		}
+	}	
 }

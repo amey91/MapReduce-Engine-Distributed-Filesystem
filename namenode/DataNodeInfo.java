@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import commons.Logger;
-
+import filesystem.FileBlock;
 import filesystem.FileSystemException;
 
 public class DataNodeInfo implements Comparable<DataNodeInfo>, Iterable<DataNodeInfo>{
@@ -14,22 +14,44 @@ public class DataNodeInfo implements Comparable<DataNodeInfo>, Iterable<DataNode
 	private long lastSeen;
 	private long freeSpace;
 	private ArrayList<String> fileProxyList;
+	// these file blocks will temporarily store the unconfirmed blocks for each file
+	public ArrayList<FileBlock> tempFileBlocks;
 	
 	public DataNodeInfo(String id){
 		this.setId(id);
 		this.lastSeen = System.currentTimeMillis();
 		fileProxyList = new ArrayList<String>();
+		tempFileBlocks = new ArrayList<FileBlock>();
 	}
 	
 	/* getters and setters for this class */
 	public String getId() {
 		return id;
 	}
+	
+	public void setFileBLocks(FileBlock[] f){
+		for(FileBlock fb : f)
+		tempFileBlocks.add(fb);
+	}
+	
+	
+	public void deleteTempFileBlock(FileBlock[] toBeDeleted){
+		Logger.log("TEMP BEFORE deletion: " + tempFileBlocks.size());
+		for(FileBlock temp : toBeDeleted)
+			tempFileBlocks.remove(temp);	
+		tempFileBlocks.remove(toBeDeleted);
+		Logger.log("TEMP AFTER deletion: " + tempFileBlocks.size());
+	}
+	
 	@Override 
 	public boolean equals(Object other) {
 		if(other instanceof DataNodeInfo)
+			return id.equals( ((DataNodeInfo)other).id);
+		else if(other instanceof String)
+			return id.equals( (String)other);
+		else
 			return false;
-	    return id == ((DataNodeInfo)other).id;
+				
 	}
 	public void setId(String id) {
 		this.id = id;
@@ -84,11 +106,22 @@ public class DataNodeInfo implements Comparable<DataNodeInfo>, Iterable<DataNode
 
 	public void shutDown() {
 
-		// TODO Failure! Handle Files placed on this machine
+		// Failure! Handle Files placed on this machine
 		try
 		{
+			//delete any temporary file name blocked by this data node
 			for(String proxy: fileProxyList)
 				NameNode.fs.RemoveFileProxy(proxy);
+			//TODO put all blocks of this node into deletequeue
+			
+			//for all fileblocks on that client
+			for(FileBlock fb : tempFileBlocks){
+				for(String deleteLocation:fb.getNodeLocations()){
+					if(!id.equals(deleteLocation))
+						NameNode.deleteThread.push(fb.getBlockFileName(), deleteLocation);
+				}
+			}//end of push to delete thread	
+			
 		} catch(FileSystemException e){
 			
 			//TODO delete

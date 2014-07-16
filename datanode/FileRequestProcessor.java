@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 
+import namenode.InvalidDataNodeException;
 import commons.Logger;
 import communication.Communicator;
 import communication.Message;
@@ -19,7 +20,8 @@ public class FileRequestProcessor extends Thread{
 	public void run(){
 		try{
 			Message inMessage = Communicator.receiveMessage(socket);
-
+			Logger.log("received message" + inMessage.type);
+			
 			if(inMessage.type.equals("add")){
 				
 				Communicator.receiveFile(socket, 
@@ -34,14 +36,19 @@ public class FileRequestProcessor extends Thread{
 				if (fileTemp.exists()){
 				    Logger.log("From delete File: " + inMessage.fileName);
 					fileTemp.delete();
-					DataNode.nameNode.ConfirmDeletion(blockName, DataNode.key);
+					DataNode.nameNode.ConfirmDeletion(DataNode.key, blockName, DataNode.key);
 				}
 				else
-					DataNode.nameNode.ConfirmDeletion(blockName, DataNode.key);
+					DataNode.nameNode.ConfirmDeletion(DataNode.key, blockName, DataNode.key);
+			}
+			else if(inMessage.type.equals("reset")){
+				DataNode.resetAllThreads();
 			}
 		}
 		catch(IOException | ClassNotFoundException | InterruptedException e){
 
+		} catch (InvalidDataNodeException e) {
+			DataNode.reset();
 		}
 
 	}

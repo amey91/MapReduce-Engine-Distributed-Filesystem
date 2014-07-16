@@ -45,5 +45,14 @@ public class FileBlock implements Serializable{
 			NameNode.deleteThread.push(blockName, nodeLocation);
 		}
 	}
+	public boolean equals(Object obj) {
+        if (obj instanceof FileBlock){
+        	FileBlock fb = (FileBlock)obj;
+        	//TODO do we need to compare filelocations too?
+            return fb.blockName.equals(blockName);
+        }
+        else
+            return false;
+    }
 	
 }

@@ -2,10 +2,12 @@ package datanode;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
+import namenode.InvalidDataNodeException;
 import commons.Logger;
 import filesystem.FileSystemException;
 
@@ -30,10 +32,12 @@ public class DataNodeConsoleThread extends Thread{
 						+ "\n mkdir <folderPath>"
 						+ "\n startJob <jarFileName.jar>"
 						+ "\n stopJob <jobId>"
-						+ "\n monitor \n");
+						+ "\n monitor \n"
+						+ "\n key "
+						+ "stophb \n");
 				choice = br.readLine();
 				if(choice=="" || choice==null){
-         			throw new Exception("Blank input not allowed.");
+         			throw new IOException("Blank input not allowed.");
          		}
          		choices = choice.split(" ");
 				choices[0] = choices[0].toLowerCase();
@@ -43,13 +47,13 @@ public class DataNodeConsoleThread extends Thread{
          		case("localtohdfs"):
          			if(choices.length!=3){
          				log("got " + choices.length + " arguments. Expected 3 arguments");
-         				throw new Exception("Wrong number of arguments!");
+         				throw new IOException("Wrong number of arguments!");
          			}
          			String localFilePath = choices[1];
          			String HDFSFilePath = choices[2];
          			
          			if(!checkFileExists(localFilePath)){
-         				throw new Exception(localFilePath + ": File does not exist");
+         				throw new IOException(localFilePath + ": File does not exist");
          			}
          			log("Uploading file to HDFS");
          			new Thread(new LocalToHDFS(localFilePath,HDFSFilePath)).start();
@@ -58,58 +62,76 @@ public class DataNodeConsoleThread extends Thread{
          		case("ls"):
          			if(choices.length!=2){
          				log("got " + choices.length + " arguments. Expected 2 argument.");
-         				throw new Exception("Wrong number of arguments!");
+         				throw new IOException("Wrong number of arguments!");
          			}
          			ls(choices[1]);
          			break;
          		case("rm"):
          			if(choices.length!=2){
          				log("got " + choices.length + " arguments. Expected 2 arguments");
-         				throw new Exception("Wrong number of arguments!");
+         				throw new IOException("Wrong number of arguments!");
          			}
          			rm(choices[1]);
          			break;
          		case("mkdir"):
          			if(choices.length!=2){
          				log("got " + choices.length + " arguments. Expected 2 arguments");
-         				throw new Exception("Wrong number of arguments!");
+         				throw new IOException("Wrong number of arguments!");
          			}
          			mkdir(choices[1]);
          			 break;
          		case("startjob"):
          			if(choices.length!=2){
          				log("got " + choices.length + " arguments. Expected 2 arguments");
-         				throw new Exception("Wrong number of arguments!");
+         				throw new IOException("Wrong number of arguments!");
          			}
          			// TODO
          		case("stopjob"):
          			if(choices.length!=2){
          				log("got " + choices.length + " arguments. Expected 2 arguments");
-         				throw new Exception("Wrong number of arguments!");
+         				throw new IOException("Wrong number of arguments!");
          			}
          			// TODO
         			 break;
+         		case("stophb"):{
+         			if(HeartbeatThread.stopHB == true)	
+         				HeartbeatThread.stopHB = false;
+         			else
+         				HeartbeatThread.stopHB = true;
+         			}
+         			break;
          		case("monitor"):
          			if(choices.length!=2){
          				log("got " + choices.length + " arguments. Expected 2 arguments");
-         				throw new Exception("Wrong number of arguments!");
+         				throw new IOException("Wrong number of arguments!");
          			}
          			// TODO
         			 break;
+         		case("key"):
+         			
+         				log("my key: " + DataNode.key);
+         				
+         			
+         			// TODO
+        			 break;
          		default:
-         			throw new Exception("Wrong input detected! ");
+         			throw new IOException("Wrong input detected! ");
          		}
 				
-			} catch(Exception e){
+			} catch(InvalidDataNodeException e){
+				DataNode.reset();
+			}catch (IOException e) {
+				// TODO Auto-generated catch block
 				log(e.getMessage());
-			}//end of try
+				e.printStackTrace();
+			}
 		}//end of while
 	}
 	
-	private void ls(String remoteFilePath){	
+	private void ls(String remoteFilePath) throws InvalidDataNodeException{	
 		
 		try {
-			ArrayList<String> list = DataNode.nameNode.ls(remoteFilePath);
+			ArrayList<String> list = DataNode.nameNode.ls(DataNode.key,remoteFilePath);
 
 			for(String s: list)
 				Logger.log(s);
@@ -121,10 +143,10 @@ public class DataNodeConsoleThread extends Thread{
 		}
 	}
 
-	private void rm(String DFSFilePath){
+	private void rm(String DFSFilePath) throws InvalidDataNodeException{
 
 		try {
-			DataNode.nameNode.rm(DFSFilePath);
+			DataNode.nameNode.rm(DataNode.key,DFSFilePath);
 		} catch (RemoteException|FileSystemException e) {
 			// TODO delete
 			Logger.log(e.getMessage());
@@ -133,9 +155,9 @@ public class DataNodeConsoleThread extends Thread{
 
 	}
 	
-	private void mkdir(String DFSFilePath) {
+	private void mkdir(String DFSFilePath) throws InvalidDataNodeException {
 		try {
-			DataNode.nameNode.mkdir(DFSFilePath);
+			DataNode.nameNode.mkdir(DataNode.key,DFSFilePath);
 		} catch (RemoteException | FileSystemException e) {
 			// TODO delete
 			Logger.log(e.getMessage());

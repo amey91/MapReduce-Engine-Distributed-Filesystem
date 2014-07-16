@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 
-import namenode.NameNode;
+import namenode.InvalidDataNodeException;
 import commons.AddressToIPPort;
 import commons.Logger;
 import communication.Communicator;
@@ -45,7 +45,7 @@ public class LocalToHDFS extends Thread {
 
 			// divide the file into smaller blocks
 			long[] splitSizes = getDivisionSizes(localFilePath, no_of_blocks);
-			DataNode.ftThread.add(localFilePath, HDFSFilePath, fileBlocks, splitSizes);
+			DataNode.fcThread.add(localFilePath, HDFSFilePath, fileBlocks, splitSizes);
 			
 			//long[] result = divideAndSendFile(localFilePath, no_of_blocks, fileBlocks);
 			//DataNode.nameNode.confirmLocalToHDFS(DataNode.key, HDFSFilePath, fileBlocks, result);
@@ -54,6 +54,8 @@ public class LocalToHDFS extends Thread {
 			// TODO delete 
 			Logger.log(e.getMessage());
 			e.printStackTrace();
+		} catch (InvalidDataNodeException e) {
+			DataNode.reset();
 		}
 	}
 

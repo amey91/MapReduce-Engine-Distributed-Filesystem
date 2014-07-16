@@ -3,6 +3,8 @@ package filesystem;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import commons.Logger;
+
 public class FileSystem {
 	public static final char DIRECTORYSEPARATOR = '/';
 
@@ -18,7 +20,8 @@ public class FileSystem {
 	private Directory getPreviousWorkingDirectory(String[] treePath) throws FileSystemException{
 		if(treePath.length == 0)
 			throw new FileSystemException("Invalid Path");
-		
+		for(String s: treePath)
+			Logger.log("pwd: "+ s);
 		return rootDirectory.getSubDirectory(Arrays.copyOfRange(treePath, 0, treePath.length-1));
 	}
 
@@ -29,7 +32,7 @@ public class FileSystem {
 	public void MakeDirectory(String pathToDirectory) throws FileSystemException {
 		synchronized(lock){
 			String pathNodes[] = pathToDirectory.split( Character.toString(DIRECTORYSEPARATOR));
-
+			
 			getPreviousWorkingDirectory(pathNodes).MakeDirectory(pathNodes[pathNodes.length-1]);
 		}
 	}

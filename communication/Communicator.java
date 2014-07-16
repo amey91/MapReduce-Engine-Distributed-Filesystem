@@ -15,6 +15,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import commons.AddressToIPPort;
 import commons.Logger;
 import conf.Constants;
 
@@ -63,7 +64,7 @@ public class Communicator {
 	    BufferedOutputStream bos = new BufferedOutputStream(fos);
 	    
 
-	    byte[] bytearray = new byte[1024];
+	    byte[] bytearray = new byte[1024*1024];
 	    InputStream is = socket.getInputStream();
 
 	    long bytesLeft = fileSize;
@@ -112,23 +113,44 @@ public class Communicator {
 			long streamLength) throws IOException {
 		
 		long totalTransferred = 0;
-		byte[] byteArray = new byte[1024];
+		byte[] byteArray = new byte[102400];
 
 		OutputStream os[] = new OutputStream[socket.length];
+		for(int i=0;i<socket.length;i++)
+			os[i] = socket[i].getOutputStream();
 		
 		while( totalTransferred < streamLength)
 		{
-			int left = (int) (streamLength-totalTransferred);
-			int bytesRead = bis.read(byteArray, 0, Math.min(byteArray.length, left) );
+			long left = (streamLength-totalTransferred);
+			int bytesToRead = byteArray.length;
+			if(left < byteArray.length)
+				bytesToRead = (int)left;
 			
-			if(bytesRead==0)
+			int bytesRead = bis.read(byteArray, 0, bytesToRead);
+			
+			if(bytesRead==0){
 				break;
+			}
+				
 			
-			Logger.log("sending " + bytesRead);
-			for(int i=0; i<os.length; i++)
-				os[i].write(byteArray, 0, bytesRead);
+			Logger.log("sending " + bytesRead + " " +totalTransferred);
+
+			//for(int i=0; i<os.length; i++)
+			os[0].write(byteArray, 0, bytesRead);
+			
 			totalTransferred += bytesRead;
-		}
+		}//end of while
+
+		Logger.log("out of send ");
 		return totalTransferred;
+	}
+
+	public static Socket CreateDataSocket(String clientKey) throws IOException {
+		String[] ipPort = AddressToIPPort.addressToIPPort(clientKey);
+			
+		String ip = ipPort[0];
+		int port = Integer.parseInt(ipPort[1]);
+		Socket sendingSocket = new Socket(InetAddress.getByName(ip),port);
+		return sendingSocket;
 	}	
 }

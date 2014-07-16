@@ -10,7 +10,7 @@ public class Directory {
 	Directory parentDirectory;
 	ArrayList<Directory> childDirectories;
 	ArrayList<DistributedFile> files;
-	ArrayList<String> fileProxy;
+	ArrayList<String> fileProxies;
 	
 	
 	public Directory(Directory parent, String directoryName) {
@@ -18,6 +18,7 @@ public class Directory {
 		this.directoryName = directoryName;
 		childDirectories = new ArrayList<Directory>();
 		files = new ArrayList<DistributedFile>();
+		fileProxies = new ArrayList<String>();
 	}
 	
 	public Directory() {
@@ -25,6 +26,7 @@ public class Directory {
 		this.directoryName = "";
 		childDirectories = new ArrayList<Directory>();
 		files = new ArrayList<DistributedFile>();
+		fileProxies = new ArrayList<String>();
 	}
 	
 	public String getName(){
@@ -40,6 +42,8 @@ public class Directory {
 	
 	public Directory getSubDirectory(String[] pathNodes) throws FileSystemException{
 		
+		for(String s:pathNodes)
+			Logger.log("getsub: " + s);
 		int pos = 0;
 		while( pos<pathNodes.length && pathNodes[pos].trim().equals(""))
 			pos++;
@@ -77,7 +81,7 @@ public class Directory {
 		if(!isPresent(fileName, true))
 			throw new FileSystemException("Internal Error! Proxy for the file not found!");
 		
-		fileProxy.remove(fileName);
+		fileProxies.remove(fileName);
 		
 		file.parent = this;
 		file.fileName = fileName;
@@ -95,14 +99,14 @@ public class Directory {
 				return true;
 		
 		if(includeProxy)
-			for(String s: fileProxy)
+			for(String s: fileProxies)
 				if(s.equals(FileOrDirectoryName))
 					return true;
 		
 		return false;
 	}
 	private Boolean isEmpty(){
-		return childDirectories.size() == 0 && files.size() == 0 && fileProxy.size() == 0;
+		return childDirectories.size() == 0 && files.size() == 0 && fileProxies.size() == 0;
 	}
 	
 	public void RemoveFileOrDirectory(String fileName) throws FileSystemException {
@@ -136,10 +140,14 @@ public class Directory {
 		
 		ArrayList<String> returnList = new ArrayList<String>();
 		for(Directory d: childDirectories)
-			returnList.add("DIR  " + d.getName());
-		
+			returnList.add("DIR   " + d.getName());
+
 		for(DistributedFile f: files)
-			returnList.add("FILE " + f.getFileName());
+			returnList.add("FILE  " + f.getFileName());
+		
+		for(String s: fileProxies)
+			returnList.add("PROXY " + s);
+		
 		Logger.log("lendir: " + (childDirectories.size()+files.size()));
 		return returnList;
 	}
@@ -149,15 +157,15 @@ public class Directory {
 		if(isPresent(fileName, true))
 			throw new FileSystemException("File/Directory already exists");
 		
-		fileProxy.add(fileName);
+		fileProxies.add(fileName);
 	}
 	
 	public void RemoveFileProxy(String fileName) throws FileSystemException {
 
-		if(!fileProxy.contains(fileName))
+		if(!fileProxies.contains(fileName))
 			throw new FileSystemException("Proxy doesn't exists");
 		
-		fileProxy.remove(fileName);
+		fileProxies.remove(fileName);
 	}
 	
 }

@@ -1,4 +1,4 @@
-package filesystem;
+package namenode;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -36,6 +36,7 @@ public class DeleteFileThread extends Thread{
 						ipPort = AddressToIPPort.addressToIPPort(nodeLocation);
 						Message inputMessage = new Message("remove");
 						inputMessage.fileName = blockName;
+						
 						Communicator.sendMessage(ipPort[0], Integer.parseInt(ipPort[1]), inputMessage);
 					} catch (NumberFormatException | InterruptedException | IOException e) {
 						// TODO delete
@@ -56,22 +57,3 @@ public class DeleteFileThread extends Thread{
 		}
 	}
 }
-
-class BlockLocationPair{
-	String blockName;
-	String nodeLocation;
-	BlockLocationPair(String blockName, String nodeLocation){
-		this.blockName = blockName;
-		this.nodeLocation = nodeLocation;
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-        if (obj instanceof BlockLocationPair){
-        	BlockLocationPair blp = (BlockLocationPair) obj;
-            return blockName.equals(blp.blockName) && nodeLocation.equals(blp.nodeLocation);
-        }
-        else
-            return false;
-    }
-};
