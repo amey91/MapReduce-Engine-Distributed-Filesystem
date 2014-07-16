@@ -58,10 +58,8 @@ public class Communicator {
 		socket.close();
 		return newObj;
 	}
-	
-	public static void receiveFile(Socket socket, String filePath, long fileSize) throws IOException{
-		FileOutputStream fos = new FileOutputStream(filePath);
-	    BufferedOutputStream bos = new BufferedOutputStream(fos);
+	public static long receiveStream(Socket socket, FileOutputStream fos, long fileSize) throws IOException{
+		BufferedOutputStream bos = new BufferedOutputStream(fos);
 	    
 
 	    byte[] bytearray = new byte[1024*1024];
@@ -71,12 +69,24 @@ public class Communicator {
 	    
 	    while(bytesLeft>0){
 	    	int bytesRead = is.read(bytearray, 0, bytearray.length);
+	    	
+	    	if(bytesRead==0)
+	    		break;
+	    	
 	        bos.write(bytearray, 0, bytesRead);
 	        System.out.println(" "+bytesRead);;
 	        bytesLeft -= bytesRead;
 		}
 	    bos.close();
+	    return fileSize-bytesLeft;
+	}
+	
+	public static long receiveFile(Socket socket, String filePath, long fileSize) throws IOException{
+		FileOutputStream fos = new FileOutputStream(filePath);
+	    long fileSizeReceived = receiveStream(socket, fos, fileSize);
 	    fos.close();
+	    
+	    return fileSizeReceived;
 	}
 	
 	// create server socket, keep listening for requests, create thread for handling message

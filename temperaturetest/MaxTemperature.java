@@ -3,12 +3,10 @@ package temperaturetest;
 // cc MaxTemperature Application to find the maximum temperature in the weather dataset
 // vv MaxTemperature
 
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+
+import mapreduce.Job;
+
+import java.nio.file.Paths;
 
 public class MaxTemperature {
 
@@ -19,19 +17,19 @@ public class MaxTemperature {
     }
     
     Job job = new Job();
-    job.setJarByClass(MaxTemperature.class);
+    //job.setJarByClass(MaxTemperature.class);
     job.setJobName("Max temperature");
 
-    FileInputFormat.addInputPath(job, new Path(args[0]));
-    FileOutputFormat.setOutputPath(job, new Path(args[1]));
+    job.setInputPath(Paths.get(args[0]));
+    job.setOutputPath(Paths.get(args[1]));
     
     job.setMapperClass(MaxTemperatureMapper.class);
     job.setReducerClass(MaxTemperatureReducer.class);
 
-    job.setOutputKeyClass(Text.class);
-    job.setOutputValueClass(IntWritable.class);
+    job.setOutputKeyClass(String.class);
+    job.setOutputValueClass(Integer.class);
     
-    System.exit(job.waitForCompletion(true) ? 0 : 1);
+    System.exit(job.waitForCompletion());
   }
 }
 // ^^ MaxTemperature

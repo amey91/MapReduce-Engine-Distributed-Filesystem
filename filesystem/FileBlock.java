@@ -10,19 +10,15 @@ public class FileBlock implements Serializable{
 	
 	private static final long serialVersionUID = -1942709905910279925L;
 	String blockName;
+	long blockSize;
 	String[] dataNodeLocations;
 	int validLocations;
+	int blockLocations;
 	
 	public FileBlock(String blockName){
 		this.blockName = blockName;
 		this.dataNodeLocations = new String[Constants.REPLICATION_FACTOR];
 		validLocations = 0;
-	}
-	
-	public FileBlock(String blockName, String[] dataNodeLocations){
-		this.blockName = blockName;
-		this.dataNodeLocations = dataNodeLocations;
-		validLocations = dataNodeLocations.length;
 	}
 	
 	public void addNodeLocation(String node) throws Exception {
@@ -45,6 +41,7 @@ public class FileBlock implements Serializable{
 			NameNode.deleteThread.push(blockName, nodeLocation);
 		}
 	}
+	
 	public boolean equals(Object obj) {
         if (obj instanceof FileBlock){
         	FileBlock fb = (FileBlock)obj;
@@ -54,5 +51,13 @@ public class FileBlock implements Serializable{
         else
             return false;
     }
+
+	public void setSize(long size) {
+		blockSize = size;
+	}
+	
+	public long getSize() {
+		return blockSize;
+	}
 	
 }

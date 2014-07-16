@@ -71,4 +71,10 @@ public class FileSystem {
 			getPreviousWorkingDirectory(pathNodes).RemoveFileProxy(pathNodes[pathNodes.length-1]);
 		}
 	}
+	public FileBlock[] getFileBlocks(String pathToFile) throws FileSystemException {
+		synchronized(lock){
+			String pathNodes[] = pathToFile.split( Character.toString(DIRECTORYSEPARATOR));
+			return getPreviousWorkingDirectory(pathNodes).getFileBlocks(pathNodes[pathNodes.length-1]);
+		}		
+	}
 }

@@ -13,7 +13,6 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-import namenode.DataNodeInfo;
 import namenode.NameNodeInterface;
 import communication.Communicator;
 import communication.Message;

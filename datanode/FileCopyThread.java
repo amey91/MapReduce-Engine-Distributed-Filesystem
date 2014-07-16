@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import namenode.InvalidDataNodeException;
@@ -32,7 +33,20 @@ public class FileCopyThread extends Thread{
 				additionQueue.add(e);
 		
 	}
+
+	public void add(SendingEntity sendingEntity) {
+		additionQueue.add(sendingEntity);
+	}
 	
+	public void remove(Block parent, String nodeLocation){
+		additionQueue.remove(new SendingEntity(parent, nodeLocation));
+	}
+	
+	public void remove(DistFile f){
+		for(Block b: f.blocks)
+			for(SendingEntity e: b.sendingEntities)
+				additionQueue.remove(e);
+	}
 	@Override
 	public void run(){
 		while(true){
@@ -163,7 +177,19 @@ class DistFile{
 
 	Boolean[] successArray = new Boolean[Constants.REPLICATION_FACTOR];
 	
-	void report(String blockName){
+	void report(Boolean success, String blockName){
+		if(success == false){
+			try {
+				DataNode.nameNode.confirmLocalToHDFS(DataNode.key, HDFSFilePath, fileBlocks);
+			} catch (RemoteException | FileSystemException e) {
+				Logger.log(e.getMessage());
+			}
+			catch(InvalidDataNodeException e){
+				DataNode.reset();
+			}
+			DataNode.fcThread.remove(this);
+		}
+		
 		boolean complete = true;
 		
 		//check which block sent the confirmation
@@ -178,6 +204,8 @@ class DistFile{
 
 		try {
 			if(complete){
+				for(int i=0; i<blocks.length; i++)
+					fileBlocks[i].setSize(blocks[i].size);
 				//Got all confirmations, now send confirmation
 				DataNode.nameNode.confirmLocalToHDFS(DataNode.key, HDFSFilePath, fileBlocks);
 			}
@@ -221,13 +249,22 @@ class Block{
 		// update the node location for this file block which was sent successfully
 
 		boolean complete = true;
-		
+		boolean needsToBeRefreshed = false;
 		for(int i=0;i<Constants.REPLICATION_FACTOR;i++)
 			if(sendingEntities[i].nodeLocation.equals(nodeLocation))
 			{
-				successArray[i] = (success?1:-1);
+				if(!success)
+				{
+					successArray[i]--;
+					if(successArray[i]<=-5){
+						needsToBeRefreshed = true;
+					}
+				}
+				else
+					successArray[i] = 1;
 				break;
 			}
+		
 		
 		for(int b: successArray)
 			if(b!=1)
@@ -236,7 +273,33 @@ class Block{
 		
 		//received all confirmations, send info to parent file
 		if(complete)
-			parent.report(blockName);
+			parent.report(true, blockName);
+		else if(needsToBeRefreshed){
+			ArrayList<String> doneList = new ArrayList<String>();
+			ArrayList<String> failList = new ArrayList<String>();
+			for(int i=0; i<sendingEntities.length; i++)
+				if(successArray[i]==1)
+					doneList.add(sendingEntities[i].nodeLocation);
+				else{
+					failList.add(sendingEntities[i].nodeLocation);
+					DataNode.fcThread.remove(this, sendingEntities[i].nodeLocation);
+				}
+			ArrayList<String> newLocations = DataNode.nameNode.getNewLocations(DataNode.key, doneList, failList);
+			
+			if(newLocations == null)
+				parent.report(false, blockName);
+			
+			int newCount = 0;
+			for(int i=0; i<sendingEntities.length; i++){
+				if(successArray[i]<0){
+					sendingEntities[i] = new SendingEntity(this, newLocations[newCount++]);
+					DataNode.fcThread.add(sendingEntities[i]);
+					successArray[i] = 0;
+				}
+			}
+			
+		}
+		
 	}
 };
 

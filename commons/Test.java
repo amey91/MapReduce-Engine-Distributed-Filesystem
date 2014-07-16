@@ -11,6 +11,8 @@ public class Test {
 		ServerSocket jobSocket = new ServerSocket(0);
 		String a = InetAddress.getLocalHost().toString();
 		a = a.substring(a.indexOf('/')+1);
+		Runtime runtime =Runtime.getRuntime();
+		Runtime.getRuntime().exec("java C:/Users/Amey/workspace/example3/commons/TestClient");
 		Logger.log(a);
 		Logger.log(jobSocket.getInetAddress().getHostAddress());
 		Logger.log(5*Math.pow(2, 20)+"");
@@ -22,5 +24,6 @@ public class Test {
 		String lll = "/bib.txt";
 		String[] llll = lll.trim().split("/");
 		Logger.log(llll[0].length() +"" ) ;
+		
 	}
 }

@@ -82,25 +82,29 @@ public class NameNode extends Thread implements NameNodeInterface {
 		return  resultBlock;
 
 	}
-	public void confirmLocalToHDFS(String clientKey, String fileName, FileBlock[] blocks)throws RemoteException, FileSystemException, InvalidDataNodeException{
+	public void confirmLocalToHDFS(String clientKey, Boolean success, String fileName, FileBlock[] blocks)throws RemoteException, FileSystemException, InvalidDataNodeException{
 		checkKey(clientKey);
 
-		//TODO update datanodeinfo
-		DistributedFile file = new DistributedFile(blocks);
-		fs.InsertFile(fileName, file);
+		
+		if(success){
+			DistributedFile file = new DistributedFile(blocks);
+			fs.InsertFile(fileName, file);
+		}
+		else{
+			for(FileBlock b: blocks)
+				b.delete();
+		}
 
 		for(DataNodeInfo d : NameNode.dataNodeList)
 		{
 			if(d.getId().equals(clientKey)){
+				if(!success)
+					fs.RemoveFileProxy(fileName);
+				
 				d.deleteTempFileBlock(blocks);
 				d.deleteFileProxy(fileName);
 			}
 		}
-
-	}
-	// TODO 
-	public void HDFSToLocal(String clientKey, String fileName)throws RemoteException, InvalidDataNodeException{
-		checkKey(clientKey);
 
 	}
 	@Override
@@ -212,6 +216,37 @@ public class NameNode extends Thread implements NameNodeInterface {
 
 		deleteThread.remove(blockName, nodeLocation);
 
+	}
+
+	@Override
+	public FileBlock[] getFileBlocks(String clientKey, String HDFSFilePath)
+			throws FileSystemException, RemoteException, InvalidDataNodeException {
+		checkKey(clientKey);
+		NameNode.fs.getFileBlocks(HDFSFilePath);
+		return null;
+	}
+
+	@Override
+	public ArrayList<String> getNewLocations(String clientKey, ArrayList<String> doneList,
+			ArrayList<String> failList) throws RemoteException,
+			InvalidDataNodeException, FileSystemException {
+		checkKey(clientKey);
+		
+		Collections.sort(dataNodeList);
+		int numRequired = failList.size();
+		ArrayList<String> returnList = new ArrayList<String>();
+		for(DataNodeInfo d: dataNodeList){
+			if(!doneList.contains(d.getId()) && !failList.contains(d.getId())){
+				returnList.add(d.getId());
+				if(returnList.size() >= numRequired)
+					break;
+			}
+		}
+		
+		if(returnList.size() < numRequired)
+			return null; //Dont have other options, send fail
+		else
+			return returnList;
 	}
 
 }

@@ -163,9 +163,17 @@ public class Directory {
 	public void RemoveFileProxy(String fileName) throws FileSystemException {
 
 		if(!fileProxies.contains(fileName))
-			throw new FileSystemException("Proxy doesn't exists");
+			throw new FileSystemException("Proxy doesn't exist");
 		
 		fileProxies.remove(fileName);
+	}
+
+	public FileBlock[] getFileBlocks(String fileName) throws FileSystemException {
+		
+		for(DistributedFile f: files)
+			if(f.fileName.equals(fileName))
+				return f.blocks;
+		throw new FileSystemException("File Not Found");
 	}
 	
 }

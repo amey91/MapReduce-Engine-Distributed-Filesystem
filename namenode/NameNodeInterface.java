@@ -21,9 +21,7 @@ public interface NameNodeInterface extends Remote{
 		// 			the intended location of each block on various mappers 
 		public FileBlock[] localToHDFS(String clientKey, String newDFSFileName, long fileSize)throws RemoteException, FileSystemException, InvalidDataNodeException;
 
-		public void confirmLocalToHDFS(String clientKey, String fileName, FileBlock[] blocks)throws RemoteException, FileSystemException, InvalidDataNodeException;
-		
-		public void HDFSToLocal(String clientKey, String fileName)throws RemoteException, InvalidDataNodeException; 
+		public void confirmLocalToHDFS(String clientKey, Boolean success, String fileName, FileBlock[] blocks)throws RemoteException, FileSystemException, InvalidDataNodeException;
 		
 		public void Heartbeat(String clientKey, long sizeOfStoredFiles, long freeSpace)throws RemoteException, InvalidDataNodeException;
 		
@@ -31,4 +29,9 @@ public interface NameNodeInterface extends Remote{
 		
 		// TODO delete below and its implementation
 		public String test() throws RemoteException;
+
+		public FileBlock[] getFileBlocks(String clientKey, String HDFSFilePath) throws RemoteException, InvalidDataNodeException, FileSystemException;
+
+		public ArrayList<String> getNewLocations(String clientKey, ArrayList<String> doneList,
+				ArrayList<String> failList) throws RemoteException, InvalidDataNodeException, FileSystemException;;
 }

@@ -7,4 +7,6 @@ public class Constants {
 	// 
 	public static final int FRAME_SIZE = 1024*1024;
 	//TODO add timeouts
+
+	//TODO if(successArray[i]<=-5)
 }

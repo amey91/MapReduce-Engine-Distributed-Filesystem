@@ -35,7 +35,14 @@ public class TestClient {
     bos.close();
     sock.close();
 */
-
+	  Logger.log("HELOOEOELEOELEOE from test client");
+	  //File ab = new File();
+	  FileOutputStream fos = new FileOutputStream("C:/Temp/ab.txt");
+	  byte[] arr = new byte[4];
+	  arr[0] = 'a'; arr[1]='b'; arr[2]='c'; arr[3] =0;
+	  fos.write(arr, 0, 4);
+	  fos.close();
+	  //Thread.sleep(3000);
     ArrayList<String> classNames=new ArrayList<String>();
     ZipInputStream zip=new ZipInputStream(new FileInputStream("C:/exp.jar"));
     for(ZipEntry entry=zip.getNextEntry();entry!=null;entry=zip.getNextEntry())
