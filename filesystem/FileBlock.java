@@ -1,9 +1,16 @@
 package filesystem;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.net.Socket;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
 
+import namenode.InvalidDataNodeException;
 import namenode.NameNode;
 import commons.Logger;
+import communication.Communicator;
+import communication.Message;
 import conf.Constants;
 
 public class FileBlock implements Serializable{
@@ -13,7 +20,6 @@ public class FileBlock implements Serializable{
 	long blockSize;
 	String[] dataNodeLocations;
 	int validLocations;
-	int blockLocations;
 	
 	public FileBlock(String blockName){
 		this.blockName = blockName;
@@ -58,6 +64,45 @@ public class FileBlock implements Serializable{
 	
 	public long getSize() {
 		return blockSize;
+	}
+
+	public void fix(String id) throws FileSystemException {
+		ArrayList<String> failList = new ArrayList<String>();
+		ArrayList<String> doneList = new ArrayList<String>();
+		int location = 0, pos = 0;
+		for(String s: dataNodeLocations){
+			pos++;
+			if(s.equals(id)){
+				failList.add(s);
+				location = pos;
+			}
+			else
+				doneList.add(s);
+		}
+		try {
+			dataNodeLocations[location] = "";
+			ArrayList<String> alternate = NameNode.instance.getNewLocations(doneList.get(0), doneList, failList);
+			if(alternate ==  null)
+				throw new FileSystemException("Fixing the block failed");
+			dataNodeLocations[location] = alternate.get(0);
+			
+			Message m = new Message("send");
+			m.fileName = blockName;
+			m.sendLocation = dataNodeLocations[location];
+			try {
+				Socket socket = Communicator.CreateDataSocket(doneList.get(0));
+				Message result = Communicator.sendAndReceiveMessage(socket, m);
+				socket.close();
+				if(result.type.equals("fail"))
+					throw new FileSystemException("Fixing the block fail");
+					
+			} catch (InterruptedException | IOException | ClassNotFoundException e) {
+				throw new FileSystemException("Fixing the block failed2");
+			} 
+		} catch (RemoteException | InvalidDataNodeException e) {
+			Logger.log("Can't happen");
+			e.printStackTrace();
+		}
 	}
 	
 }

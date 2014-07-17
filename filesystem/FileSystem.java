@@ -77,4 +77,7 @@ public class FileSystem {
 			return getPreviousWorkingDirectory(pathNodes).getFileBlocks(pathNodes[pathNodes.length-1]);
 		}		
 	}
+	public void HandleNodeFailure(String id) {
+		rootDirectory.FixBlocksWith(id);
+	}
 }

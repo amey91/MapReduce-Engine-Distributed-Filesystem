@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import namenode.InvalidDataNodeException;
@@ -180,7 +181,7 @@ class DistFile{
 	void report(Boolean success, String blockName){
 		if(success == false){
 			try {
-				DataNode.nameNode.confirmLocalToHDFS(DataNode.key, HDFSFilePath, fileBlocks);
+				DataNode.nameNode.confirmLocalToHDFS(DataNode.key, false, HDFSFilePath, fileBlocks);
 			} catch (RemoteException | FileSystemException e) {
 				Logger.log(e.getMessage());
 			}
@@ -207,7 +208,7 @@ class DistFile{
 				for(int i=0; i<blocks.length; i++)
 					fileBlocks[i].setSize(blocks[i].size);
 				//Got all confirmations, now send confirmation
-				DataNode.nameNode.confirmLocalToHDFS(DataNode.key, HDFSFilePath, fileBlocks);
+				DataNode.nameNode.confirmLocalToHDFS(DataNode.key, true, HDFSFilePath, fileBlocks);
 			}
 		} catch (RemoteException | FileSystemException e) {
 			// TODO delete
@@ -284,15 +285,23 @@ class Block{
 					failList.add(sendingEntities[i].nodeLocation);
 					DataNode.fcThread.remove(this, sendingEntities[i].nodeLocation);
 				}
-			ArrayList<String> newLocations = DataNode.nameNode.getNewLocations(DataNode.key, doneList, failList);
+			ArrayList<String> newLocations = null;
+			try {
+				newLocations = DataNode.nameNode.getNewLocations(DataNode.key, doneList, failList);
+			} catch (RemoteException| FileSystemException e) {
+				Logger.log(e.getMessage());
+			} catch (InvalidDataNodeException e){
+				DataNode.reset();
+			}
 			
-			if(newLocations == null)
+			if(newLocations == null || newLocations.size() < failList.size())
 				parent.report(false, blockName);
 			
-			int newCount = 0;
+			Iterator<String> iter = newLocations.iterator();
+			
 			for(int i=0; i<sendingEntities.length; i++){
 				if(successArray[i]<0){
-					sendingEntities[i] = new SendingEntity(this, newLocations[newCount++]);
+					sendingEntities[i] = new SendingEntity(this, iter.next());
 					DataNode.fcThread.add(sendingEntities[i]);
 					successArray[i] = 0;
 				}
