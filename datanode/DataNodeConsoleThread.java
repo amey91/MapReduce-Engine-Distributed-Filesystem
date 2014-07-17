@@ -22,13 +22,16 @@ public class DataNodeConsoleThread extends Thread{
 	
 	@Override
 	public void run(){
+		Logger.log("Run <help> for available commands");
 		while(true){
 			try{
-				
-				choice = br.readLine();
-				if(choice=="" || choice==null){
-         			throw new IOException("");
-         		}
+
+				while(true){
+					System.out.print(">");
+					choice = br.readLine();
+					if(choice!=null && !choice.trim().equals("") )
+						break;
+				}
 				
          		choices = choice.split(" ");
 				choices[0] = choices[0].toLowerCase();
@@ -37,8 +40,8 @@ public class DataNodeConsoleThread extends Thread{
          		// TODO
          		case("localtohdfs"):
          			if(choices.length!=3){
-         				log("got " + choices.length + " arguments. Expected 3 arguments");
-         				throw new IOException("Wrong number of arguments!");
+         				
+         				throw new IOException("localToHDFS <localFilePath> <HDFSFilePath>");
          			}
          			String localFilePath = choices[1];
          			String HDFSFilePath = choices[2];
@@ -49,11 +52,10 @@ public class DataNodeConsoleThread extends Thread{
          			log("Uploading file to HDFS");
          			new Thread(new LocalToHDFS(localFilePath,HDFSFilePath)).start();
          			break;
-         		
+         			
          		case("hdfstolocal"):
          			if(choices.length!=3){
-         				log("got " + choices.length + " arguments. Expected 3 arguments");
-         				throw new IOException("Wrong number of arguments!");
+         				throw new IOException("HDFSToLocal <localFilePath> <HDFSFilePath>");
          			}
 
      				localFilePath = choices[1];
@@ -65,8 +67,7 @@ public class DataNodeConsoleThread extends Thread{
          			
          		case("ls"):
          			if(choices.length > 2){
-         				log("got " + choices.length + " arguments. Expected 2 argument.");
-         				throw new IOException("Wrong number of arguments!");
+         				throw new IOException("ls <folderPath>");
          			}
          			if(choices.length == 1)
          				ls("/");
@@ -75,28 +76,24 @@ public class DataNodeConsoleThread extends Thread{
          			break;
          		case("rm"):
          			if(choices.length!=2){
-         				log("got " + choices.length + " arguments. Expected 2 arguments");
-         				throw new IOException("Wrong number of arguments!");
+         				throw new IOException("rm <fileName>");
          			}
          			rm(choices[1]);
          			break;
          		case("mkdir"):
          			if(choices.length!=2){
-         				log("got " + choices.length + " arguments. Expected 2 arguments");
-         				throw new IOException("Wrong number of arguments!");
+         				throw new IOException("mkdir <folderPath>!");
          			}
          			mkdir(choices[1]);
          			 break;
          		case("startjob"):
          			if(choices.length!=2){
-         				log("got " + choices.length + " arguments. Expected 2 arguments");
-         				throw new IOException("Wrong number of arguments!");
+         				throw new IOException("startJob <jarFileName.jar>");
          			}
          			// TODO
          		case("stopjob"):
          			if(choices.length!=2){
-         				log("got " + choices.length + " arguments. Expected 2 arguments");
-         				throw new IOException("Wrong number of arguments!");
+         				throw new IOException("stopJob <jobId>");
          			}
          			// TODO
         			 break;
@@ -109,8 +106,7 @@ public class DataNodeConsoleThread extends Thread{
          			break;
          		case("monitor"):
          			if(choices.length!=2){
-         				log("got " + choices.length + " arguments. Expected 2 arguments");
-         				throw new IOException("Wrong number of arguments!");
+         				throw new IOException("monitor <job_id>");
          			}
          			// TODO
         			 break;
@@ -143,7 +139,6 @@ public class DataNodeConsoleThread extends Thread{
 			}catch (IOException e) {
 				// TODO Auto-generated catch block
 				log(e.getMessage());
-				e.printStackTrace();
 			}
 		}//end of while
 	}
