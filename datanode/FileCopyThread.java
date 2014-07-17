@@ -53,7 +53,7 @@ public class FileCopyThread extends Thread{
 		while(true){
 			try{
 				for(SendingEntity e: additionQueue){
-					Thread.sleep(2000);
+					//Thread.sleep(2000);
 					if(!processSendingEntity(e)){
 						e.report(false);
 						throw new InterruptedException("failure: " + e.nodeLocation + " "  + e.parent.blockName);
