@@ -58,7 +58,7 @@ public class HDFSToLocal extends Thread {
 				for(String location: block.getNodeLocations())
 				{
 					try{
-						Message m = new Message("sendFile");
+						Message m = new Message("sendMeFile");
 						m.fileName = block.getBlockFileName();
 						m.sendLocation = null;
 						

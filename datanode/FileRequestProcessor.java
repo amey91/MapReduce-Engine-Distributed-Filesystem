@@ -90,7 +90,7 @@ public class FileRequestProcessor extends Thread{
 						
 						Message confirmation = new Message("fail");
 						Communicator.sendMessage(socket, confirmation);
-						outSocket.close();
+						socket.close();
 						
 					} catch (InterruptedException | IOException e1) {
 						Logger.log("Oh well!");
