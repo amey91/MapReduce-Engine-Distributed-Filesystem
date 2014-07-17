@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -127,7 +128,9 @@ public class DataNode {
 		Logger.log("reset1");
 		Message m = new Message("reset");
 		try {
-			Communicator.sendMessage(Communicator.CreateDataSocket(DataNode.key), m);
+			Socket socket = Communicator.CreateDataSocket(DataNode.key);
+			Communicator.sendMessage(socket, m);
+			socket.close();
 			Thread.sleep(1000000);
 		} catch (InterruptedException|IOException e){
 			//TODO delete

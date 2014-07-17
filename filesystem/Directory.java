@@ -175,5 +175,19 @@ public class Directory {
 				return f.blocks;
 		throw new FileSystemException("File Not Found");
 	}
+
+	public void FixBlocksWith(String id) {
+		for(DistributedFile f: files)
+			for(FileBlock b: f.blocks){
+				try {
+					b.fix(id);
+				} catch (FileSystemException e) {
+					// TODO delete
+					Logger.log("Couldn't fix: " + f.getFullPath());
+					e.printStackTrace();
+					break;
+				}
+			}
+	}
 	
 }

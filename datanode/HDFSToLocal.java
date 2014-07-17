@@ -1,7 +1,5 @@
 package datanode;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
@@ -57,6 +55,7 @@ public class HDFSToLocal extends Thread {
 						Communicator.sendMessage(socket, m);
 						if(Communicator.receiveFile(socket, tempFileName, block.getSize())!= block.getSize())
 							throw new IOException("Received file size not expected");
+						socket.close();
 						success = true;
 						break;
 					}

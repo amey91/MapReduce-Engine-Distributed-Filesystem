@@ -10,8 +10,10 @@ public class Message implements Serializable{
 	public String type; 
 	
 	public long jobId;
-	
+
 	public String fileName;
+	
+	public String sendLocation;
 	
 	public long fileSize;
 	

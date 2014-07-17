@@ -1,13 +1,12 @@
 package namenode;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import commons.Logger;
 import filesystem.FileBlock;
 import filesystem.FileSystemException;
 
-public class DataNodeInfo implements Comparable<DataNodeInfo>, Iterable<DataNodeInfo>{
+public class DataNodeInfo implements Comparable<DataNodeInfo>{
 	
 	private String id;
 	private long sizeOfStoredFiles;
@@ -91,11 +90,6 @@ public class DataNodeInfo implements Comparable<DataNodeInfo>, Iterable<DataNode
 		return 0;
 	}
 
-	@Override
-	public Iterator<DataNodeInfo> iterator() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	public void addFileProxy(String newDFSFileName) {
 		fileProxyList.add(newDFSFileName);

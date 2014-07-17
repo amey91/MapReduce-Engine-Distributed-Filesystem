@@ -17,7 +17,6 @@ import java.net.UnknownHostException;
 
 import commons.AddressToIPPort;
 import commons.Logger;
-import conf.Constants;
 
 
 public class Communicator {
@@ -49,7 +48,7 @@ public class Communicator {
         }
 		return (Message)newObj;
 	}
-	
+
 	// create socket, accept message and close the socket
 	public static Message sendAndReceiveMessage(String hostName, int port, Message inputMessage) throws InterruptedException, UnknownHostException, IOException, ClassNotFoundException {
 		Socket socket = new Socket(hostName,port);
@@ -58,6 +57,15 @@ public class Communicator {
 		socket.close();
 		return newObj;
 	}
+	
+	// create socket, accept message and close the socket
+	public static Message sendAndReceiveMessage(Socket socket, Message inputMessage) throws InterruptedException, UnknownHostException, IOException, ClassNotFoundException {
+		Communicator.sendMessage(socket, inputMessage);
+		Message newObj = (Message)Communicator.receiveMessage(socket);
+		socket.close();
+		return newObj;
+	}
+	
 	public static long receiveStream(Socket socket, FileOutputStream fos, long fileSize) throws IOException{
 		BufferedOutputStream bos = new BufferedOutputStream(fos);
 	    
@@ -118,7 +126,12 @@ public class Communicator {
 			}
 		}//end of true	
 	}
-
+	public static long sendStream(Socket socket, BufferedInputStream bis,
+			long streamLength) throws IOException {
+		Socket[] s = new Socket[1];
+		s[0] = socket;
+		return sendStream(s, bis, streamLength);
+	}
 	public static long sendStream(Socket[] socket, BufferedInputStream bis,
 			long streamLength) throws IOException {
 		

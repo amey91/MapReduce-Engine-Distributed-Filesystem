@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import namenode.InvalidDataNodeException;
@@ -207,7 +208,11 @@ class DistFile{
 				for(int i=0; i<blocks.length; i++)
 					fileBlocks[i].setSize(blocks[i].size);
 				//Got all confirmations, now send confirmation
+<<<<<<< HEAD
 				DataNode.nameNode.confirmLocalToHDFS(DataNode.key, true,  HDFSFilePath, fileBlocks);
+=======
+				DataNode.nameNode.confirmLocalToHDFS(DataNode.key, true, HDFSFilePath, fileBlocks);
+>>>>>>> 0c0982cfbfac303330563e83b066655438664927
 			}
 		} catch (RemoteException | FileSystemException e) {
 			// TODO delete
@@ -284,15 +289,27 @@ class Block{
 					failList.add(sendingEntities[i].nodeLocation);
 					DataNode.fcThread.remove(this, sendingEntities[i].nodeLocation);
 				}
-			ArrayList<String> newLocations = DataNode.nameNode.getNewLocations(DataNode.key, doneList, failList);
+			ArrayList<String> newLocations = null;
+			try {
+				newLocations = DataNode.nameNode.getNewLocations(DataNode.key, doneList, failList);
+			} catch (RemoteException| FileSystemException e) {
+				Logger.log(e.getMessage());
+			} catch (InvalidDataNodeException e){
+				DataNode.reset();
+			}
 			
-			if(newLocations == null)
+			if(newLocations == null || newLocations.size() < failList.size())
 				parent.report(false, blockName);
 			
-			int newCount = 0;
+			Iterator<String> iter = newLocations.iterator();
+			
 			for(int i=0; i<sendingEntities.length; i++){
 				if(successArray[i]<0){
+<<<<<<< HEAD
 					sendingEntities[i] = new SendingEntity(this, newLocations.get(newCount++));
+=======
+					sendingEntities[i] = new SendingEntity(this, iter.next());
+>>>>>>> 0c0982cfbfac303330563e83b066655438664927
 					DataNode.fcThread.add(sendingEntities[i]);
 					successArray[i] = 0;
 				}

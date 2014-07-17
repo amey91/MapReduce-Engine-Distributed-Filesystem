@@ -6,8 +6,10 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 
 import commons.Logger;
+import conf.Constants;
 import filesystem.DistributedFile;
 import filesystem.FileBlock;
 import filesystem.FileSystem;
@@ -22,7 +24,7 @@ public class NameNode extends Thread implements NameNodeInterface {
 	public static DeleteFileThread deleteThread;
 
 	static FileSystem fs = new FileSystem();
-
+	public static NameNode instance;
 	private void checkKey(String clientKey) throws InvalidDataNodeException{
 		for(DataNodeInfo d: dataNodeList)
 			if(d.getId().equals(clientKey))
@@ -144,10 +146,10 @@ public class NameNode extends Thread implements NameNodeInterface {
 
 		try{
 			//@referred http://docs.oracle.com/javase/7/docs/technotes/guides/rmi/hello/hello-world.html#define`
-			NameNode nameNodeObj = new NameNode();			 
-			NameNodeInterface stub = (NameNodeInterface) UnicastRemoteObject.exportObject(nameNodeObj, 0);
-			
-			
+
+			instance = new NameNode();			 
+			NameNodeInterface stub = (NameNodeInterface) UnicastRemoteObject.exportObject(instance, 0);
+
 
 			// Bind the remote object's stub in the registry
 			Registry registry = LocateRegistry.getRegistry();
@@ -178,7 +180,6 @@ public class NameNode extends Thread implements NameNodeInterface {
 		for(DataNodeInfo s: dataNodeList)
 			Logger.log(s.getId()+ " | Stores: " + s.getsizeOfStoredFiles() +" | FREE: "+ s.getFreeSpace());
 
-		int iter = 0;
 		FileBlock[] allocation = new FileBlock[no_of_blocks];
 
 		//TODO synchronization failure
@@ -186,16 +187,14 @@ public class NameNode extends Thread implements NameNodeInterface {
 			allocation[i] = new FileBlock( "FILE" + (currentBlockNumber++));
 		}
 
-		try
-		{
-			//TODO Use a more sophisticated load balancing strategy later 
-			while(iter<no_of_blocks && dataNodeList.iterator().hasNext()){
-				//allocatedBlocks += dataNodeList.get(iter).getId()+" ";
-
-				for(int j=0; j<3;j++)
-					allocation[(iter+j)%no_of_blocks].addNodeLocation(dataNodeList.get(iter).getId());
-
-				iter++;
+		try{
+			Iterator<DataNodeInfo> iter = dataNodeList.iterator();
+			//TODO Use a more sophisticated load balancing strategy later
+			for(int i=0;i<Constants.REPLICATION_FACTOR*no_of_blocks;i++){
+				if(!iter.hasNext())
+					iter = dataNodeList.iterator();
+				
+				allocation[(i/Constants.REPLICATION_FACTOR)%no_of_blocks].addNodeLocation(iter.next().getId());
 			}
 			//allocation[0] = new FileBlock(DFSFileName+"_"+NameNode.currentBlockNumber++, allocatedBlocks);
 		}

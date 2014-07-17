@@ -10,10 +10,12 @@ public class TimeOutThread extends Thread{
 			for(DataNodeInfo d : NameNode.dataNodeList){
 				if(Math.abs(d.getLastSeen()-System.currentTimeMillis())>10000){
 					Logger.log("Client "+ d.getId() + " TIMED OUT. Deleteing it.");
-					
+					String id = d.getId();
 					d.shutDown();
-					
 					NameNode.dataNodeList.remove(i);
+
+					NameNode.fs.HandleNodeFailure(id);
+					
 					NameNode.displayDataNodes();
 					break;
 				}

@@ -14,6 +14,10 @@ import java.util.zip.ZipInputStream;
 
 import filesystem.Directory;
 
+class ccc{
+	public String s;
+};
+
 public class TestClient {
   public static void main(String[] argv) throws Exception {
     /*Socket sock = new Socket("127.0.0.1", 23456);    
@@ -35,6 +39,12 @@ public class TestClient {
     bos.close();
     sock.close();
 */
+<<<<<<< HEAD
+=======
+	  
+	  
+	  Logger.log("HELOOEOELEOELEOE from test client");
+>>>>>>> 0c0982cfbfac303330563e83b066655438664927
 	  //File ab = new File();
 	  FileOutputStream fos = new FileOutputStream("C:/Temp/newFile.txt");
 	  byte[] arr = new byte[4];
