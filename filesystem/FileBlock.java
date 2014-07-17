@@ -86,7 +86,7 @@ public class FileBlock implements Serializable{
 				throw new FileSystemException("Fixing the block failed");
 			dataNodeLocations[location] = alternate.get(0);
 			
-			Message m = new Message("send");
+			Message m = new Message("sendFile");
 			m.fileName = blockName;
 			m.sendLocation = dataNodeLocations[location];
 			try {
