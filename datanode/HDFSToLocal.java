@@ -27,7 +27,7 @@ public class HDFSToLocal extends Thread {
 		java.io.File file = new java.io.File(localFilePath);
 		if(!file.canWrite()){
 			Logger.log("Invalid output file location");
-			return;
+			//return;
 		}
 
 		try {

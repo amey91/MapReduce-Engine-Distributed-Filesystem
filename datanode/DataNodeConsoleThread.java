@@ -66,9 +66,9 @@ public class DataNodeConsoleThread extends Thread{
          				log("got " + choices.length + " arguments. Expected 3 arguments");
          				throw new IOException("Wrong number of arguments!");
          			}
-         			
-         			HDFSFilePath = choices[1];
-         			localFilePath = choices[2];
+
+     				localFilePath = choices[1];
+     				HDFSFilePath = choices[2];
          			
          			log("Uploading file to HDFS");
          			new Thread(new HDFSToLocal(localFilePath,HDFSFilePath)).start();
