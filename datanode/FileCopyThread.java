@@ -180,7 +180,7 @@ class DistFile{
 	void report(Boolean success, String blockName){
 		if(success == false){
 			try {
-				DataNode.nameNode.confirmLocalToHDFS(DataNode.key, HDFSFilePath, fileBlocks);
+				DataNode.nameNode.confirmLocalToHDFS(DataNode.key, false, HDFSFilePath, fileBlocks);
 			} catch (RemoteException | FileSystemException e) {
 				Logger.log(e.getMessage());
 			}
@@ -207,7 +207,7 @@ class DistFile{
 				for(int i=0; i<blocks.length; i++)
 					fileBlocks[i].setSize(blocks[i].size);
 				//Got all confirmations, now send confirmation
-				DataNode.nameNode.confirmLocalToHDFS(DataNode.key, HDFSFilePath, fileBlocks);
+				DataNode.nameNode.confirmLocalToHDFS(DataNode.key, true,  HDFSFilePath, fileBlocks);
 			}
 		} catch (RemoteException | FileSystemException e) {
 			// TODO delete
@@ -245,7 +245,7 @@ class Block{
 		}
 	}
 	
-	void report(Boolean success, String nodeLocation){
+	void report(Boolean success, String nodeLocation) throws RemoteException, InvalidDataNodeException, FileSystemException{
 		// update the node location for this file block which was sent successfully
 
 		boolean complete = true;
@@ -292,7 +292,7 @@ class Block{
 			int newCount = 0;
 			for(int i=0; i<sendingEntities.length; i++){
 				if(successArray[i]<0){
-					sendingEntities[i] = new SendingEntity(this, newLocations[newCount++]);
+					sendingEntities[i] = new SendingEntity(this, newLocations.get(newCount++));
 					DataNode.fcThread.add(sendingEntities[i]);
 					successArray[i] = 0;
 				}
@@ -314,6 +314,12 @@ class SendingEntity{
 	}
 	
 	void report(Boolean success){
-		parent.report(success, nodeLocation);
+		try {
+			parent.report(success, nodeLocation);
+		} catch (RemoteException | InvalidDataNodeException | FileSystemException e) {
+			
+			Logger.log("Uhoh. Sending Failed in FileCopyThread. ");
+			e.printStackTrace();
+		}
 	}
 };

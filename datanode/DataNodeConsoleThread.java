@@ -40,6 +40,7 @@ public class DataNodeConsoleThread extends Thread{
 				if(choice=="" || choice==null){
          			throw new IOException("Blank input not allowed.");
          		}
+				
          		choices = choice.split(" ");
 				choices[0] = choices[0].toLowerCase();
 				
@@ -127,12 +128,11 @@ public class DataNodeConsoleThread extends Thread{
          		case("key"):
          			
          				log("my key: " + DataNode.key);
-         				
-         			
+
          			// TODO
         			 break;
          		default:
-         			throw new IOException("Wrong input detected! ");
+         			throw new IOException("Wrong input detected! "+ choice);
          		}
 				
 			} catch(InvalidDataNodeException e){

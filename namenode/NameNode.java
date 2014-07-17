@@ -146,6 +146,8 @@ public class NameNode extends Thread implements NameNodeInterface {
 			//@referred http://docs.oracle.com/javase/7/docs/technotes/guides/rmi/hello/hello-world.html#define`
 			NameNode nameNodeObj = new NameNode();			 
 			NameNodeInterface stub = (NameNodeInterface) UnicastRemoteObject.exportObject(nameNodeObj, 0);
+			
+			
 
 			// Bind the remote object's stub in the registry
 			Registry registry = LocateRegistry.getRegistry();
