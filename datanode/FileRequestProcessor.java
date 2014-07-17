@@ -23,7 +23,7 @@ public class FileRequestProcessor extends Thread{
 	public void run(){
 		try{
 			Message inMessage = Communicator.receiveMessage(socket);
-			Logger.log("received message" + inMessage.type);
+			Logger.log("received message: " + inMessage.type);
 			
 			if(inMessage.type.equals("add")){
 				
@@ -47,33 +47,46 @@ public class FileRequestProcessor extends Thread{
 			else if(inMessage.type.equals("reset")){
 				DataNode.resetAllThreads();
 			}
-			else if(inMessage.type.equals("send")){
+			else if(inMessage.type.equals("sendFile")){
 				
 				Socket outSocket = null;
+				String location = inMessage.sendLocation;
 				try{
 					String blockName = inMessage.fileName;
-					String location = inMessage.sendLocation;
-					outSocket = Communicator.CreateDataSocket(location);
+					if(location!=null)
+						outSocket = Communicator.CreateDataSocket(location);
+					else
+						outSocket = socket;
 					File sendFile = new File(DataNode.rootPath + (FileSystem.DIRECTORYSEPARATOR + blockName));
 					BufferedInputStream bis = new BufferedInputStream(
 							new FileInputStream(DataNode.rootPath + (FileSystem.DIRECTORYSEPARATOR + blockName)));
 					
-					Message m = new Message("add");
-					m.fileName = blockName;
-					m.fileSize = sendFile.length();
-					Communicator.sendMessage(outSocket, m);
+					if(location!=null){
+						Message m = new Message("add");
+						m.fileName = blockName;
+						m.fileSize = sendFile.length();
+						Communicator.sendMessage(outSocket, m);
+					}
 					Message confirmation = new Message("success");
 					
-					if(Communicator.sendStream(outSocket, bis, m.fileSize)!=m.fileSize)
+					if(Communicator.sendStream(outSocket, bis, sendFile.length())!=sendFile.length()){
 						confirmation.type = "fail";
+					}
 					
-					Communicator.sendMessage(socket, confirmation);
+					if(location!=null)
+						Communicator.sendMessage(socket, confirmation);
+					
 					outSocket.close();
 				}catch(IOException | InterruptedException e){
 					try {
-						Message confirmation = new Message("fail");
-						Communicator.sendMessage(socket, confirmation);
-						outSocket.close();
+						
+						Logger.log(e.getMessage());
+						e.printStackTrace();
+						if(location!=null){
+							Message confirmation = new Message("fail");
+							Communicator.sendMessage(socket, confirmation);
+							outSocket.close();
+						}
 					} catch (InterruptedException | IOException e1) {
 						Logger.log("Oh well!");
 						e1.printStackTrace();

@@ -53,7 +53,7 @@ public class FileCopyThread extends Thread{
 		while(true){
 			try{
 				for(SendingEntity e: additionQueue){
-					Thread.sleep(2000);
+					//Thread.sleep(2000);
 					if(!processSendingEntity(e)){
 						e.report(false);
 						throw new InterruptedException("failure: " + e.nodeLocation + " "  + e.parent.blockName);
@@ -208,11 +208,7 @@ class DistFile{
 				for(int i=0; i<blocks.length; i++)
 					fileBlocks[i].setSize(blocks[i].size);
 				//Got all confirmations, now send confirmation
-<<<<<<< HEAD
-				DataNode.nameNode.confirmLocalToHDFS(DataNode.key, true,  HDFSFilePath, fileBlocks);
-=======
 				DataNode.nameNode.confirmLocalToHDFS(DataNode.key, true, HDFSFilePath, fileBlocks);
->>>>>>> 0c0982cfbfac303330563e83b066655438664927
 			}
 		} catch (RemoteException | FileSystemException e) {
 			// TODO delete
@@ -305,11 +301,7 @@ class Block{
 			
 			for(int i=0; i<sendingEntities.length; i++){
 				if(successArray[i]<0){
-<<<<<<< HEAD
-					sendingEntities[i] = new SendingEntity(this, newLocations.get(newCount++));
-=======
 					sendingEntities[i] = new SendingEntity(this, iter.next());
->>>>>>> 0c0982cfbfac303330563e83b066655438664927
 					DataNode.fcThread.add(sendingEntities[i]);
 					successArray[i] = 0;
 				}

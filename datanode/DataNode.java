@@ -45,7 +45,8 @@ public class DataNode {
 		
 		if(args.length!=3)
 		{
-			Logger.log("Usage: DataNode <RMIRegistry> <bindname> <rootPath>");
+			// TODO Logger.log("Usage: DataNode <RMIRegistry> <bindname> <rootPath>");
+			Logger.log("Usage: DataNode <rootPath>");
 			// TODO 
 			// return;
 		}

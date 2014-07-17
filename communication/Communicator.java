@@ -2,6 +2,7 @@ package communication;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -76,7 +77,12 @@ public class Communicator {
 	    long bytesLeft = fileSize;
 	    
 	    while(bytesLeft>0){
-	    	int bytesRead = is.read(bytearray, 0, bytearray.length);
+	    	
+			int bytesToRead = bytearray.length;
+			if(bytesLeft < bytearray.length)
+				bytesToRead = (int)bytesLeft;
+			
+	    	int bytesRead = is.read(bytearray, 0, bytesToRead);
 	    	
 	    	if(bytesRead==0)
 	    		break;
@@ -90,10 +96,16 @@ public class Communicator {
 	}
 	
 	public static long receiveFile(Socket socket, String filePath, long fileSize) throws IOException{
-		FileOutputStream fos = new FileOutputStream(filePath);
+		FileOutputStream fos = null;
+		try{
+			fos = new FileOutputStream(filePath);
+		}catch(FileNotFoundException e){
+			throw new IOException("Invalid output file location:"+ filePath);
+		}
+		
 	    long fileSizeReceived = receiveStream(socket, fos, fileSize);
 	    fos.close();
-	    
+	    Logger.log("received: "+filePath+ ":" + fileSizeReceived+"/"+fileSize);
 	    return fileSizeReceived;
 	}
 	

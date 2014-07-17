@@ -25,7 +25,7 @@ public class FileMerge {
 			byte[] byteArray = new byte[1024];
 			while (true) {
 				int bytesRead = in.read(byteArray, 0, byteArray.length);
-				if(bytesRead == 0)
+				if(bytesRead <= 0)
 					break;
 				out.write(byteArray, 0, bytesRead);
 			}

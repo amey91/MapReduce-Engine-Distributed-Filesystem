@@ -24,21 +24,10 @@ public class DataNodeConsoleThread extends Thread{
 	public void run(){
 		while(true){
 			try{
-				log(	  "\n=================================================================="
-						+ "\nPlease enter one of the following: (No spaces allowed in file name)"
-						+ "\n localToHDFS <localFilePath> <HDFSFilePath>"
-						+ "\n HDFSToLocal <localFilePath> <HDFSFilePath>"
-						+ "\n ls <folderPath>"
-						+ "\n rm <fileName>"
-						+ "\n mkdir <folderPath>"
-						+ "\n startJob <jarFileName.jar>"
-						+ "\n stopJob <jobId>"
-						+ "\n monitor"
-						+ "\n key"
-						+ "\nstophb \n");
+				
 				choice = br.readLine();
 				if(choice=="" || choice==null){
-         			throw new IOException("Blank input not allowed.");
+         			throw new IOException("");
          		}
 				
          		choices = choice.split(" ");
@@ -66,9 +55,9 @@ public class DataNodeConsoleThread extends Thread{
          				log("got " + choices.length + " arguments. Expected 3 arguments");
          				throw new IOException("Wrong number of arguments!");
          			}
-         			
-         			HDFSFilePath = choices[1];
-         			localFilePath = choices[2];
+
+     				localFilePath = choices[1];
+     				HDFSFilePath = choices[2];
          			
          			log("Uploading file to HDFS");
          			new Thread(new HDFSToLocal(localFilePath,HDFSFilePath)).start();
@@ -131,8 +120,22 @@ public class DataNodeConsoleThread extends Thread{
 
          			// TODO
         			 break;
+         		case("help"):
+         			log(	  "\n=================================================================="
+    						+ "\nPlease enter one of the following: (No spaces allowed in file name)"
+    						+ "\n localToHDFS <localFilePath> <HDFSFilePath>"
+    						+ "\n HDFSToLocal <localFilePath> <HDFSFilePath>"
+    						+ "\n ls <folderPath>"
+    						+ "\n rm <fileName>"
+    						+ "\n mkdir <folderPath>"
+    						+ "\n startJob <jarFileName.jar>"
+    						+ "\n stopJob <jobId>"
+    						+ "\n monitor"
+    						+ "\n key"
+    						+ "\nstophb \n");
+         			break;
          		default:
-         			throw new IOException("Wrong input detected! "+ choice);
+         			throw new IOException("Wrong input! Enter <help> for info");
          		}
 				
 			} catch(InvalidDataNodeException e){

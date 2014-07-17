@@ -1,5 +1,7 @@
 package datanode;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
@@ -24,16 +26,24 @@ public class HDFSToLocal extends Thread {
 	@Override
 	public void run(){
 		// referred to http://stackoverflow.com/questions/2149785/get-size-of-folder-or-file
-		java.io.File file = new java.io.File(localFilePath);
-		if(!file.canWrite()){
-			Logger.log("Invalid output file location");
-			return;
-		}
 
 		try {
+
+			try{
+				FileOutputStream fos = new FileOutputStream(localFilePath);
+				fos.close();
+			}catch(FileNotFoundException e){
+				Logger.log("Invalid output file location:"+ localFilePath);
+				return;
+			}
+			
 			
 			FileBlock[] fileBlocks = DataNode.nameNode.getFileBlocks(DataNode.key, HDFSFilePath);
-			
+			if(fileBlocks==null){
+				Logger.log("Invalid input file location: "+ HDFSFilePath);
+				return;
+			}
+				
 			int counter = 0;
 			String files[] = new String[fileBlocks.length];
 			
@@ -50,6 +60,7 @@ public class HDFSToLocal extends Thread {
 					try{
 						Message m = new Message("sendFile");
 						m.fileName = block.getBlockFileName();
+						m.sendLocation = null;
 						
 						Socket socket = Communicator.CreateDataSocket(location);
 						Communicator.sendMessage(socket, m);

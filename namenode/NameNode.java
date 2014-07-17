@@ -223,8 +223,8 @@ public class NameNode extends Thread implements NameNodeInterface {
 	public FileBlock[] getFileBlocks(String clientKey, String HDFSFilePath)
 			throws FileSystemException, RemoteException, InvalidDataNodeException {
 		checkKey(clientKey);
-		NameNode.fs.getFileBlocks(HDFSFilePath);
-		return null;
+		
+		return NameNode.fs.getFileBlocks(HDFSFilePath);
 	}
 
 	@Override
