@@ -1,11 +1,17 @@
 package filesystem;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import commons.Logger;
 
-public class Directory {
+public class Directory implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 7072072642396423372L;
+	
 	String directoryName;
 	Directory parentDirectory;
 	ArrayList<Directory> childDirectories;
@@ -188,6 +194,13 @@ public class Directory {
 					break;
 				}
 			}
+	}
+
+	public DistributedFile getFile(String fileName) throws FileSystemException {
+		for(DistributedFile f: files)
+			if(f.getFileName().equals(fileName))
+				return f;
+		throw new FileSystemException("File Not Found");
 	}
 	
 }

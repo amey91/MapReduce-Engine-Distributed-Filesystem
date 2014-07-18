@@ -7,16 +7,16 @@ public class TimeOutThread extends Thread{
 	public void run(){
 		while(true){
 			int i = 0;
-			for(DataNodeInfo d : NameNode.dataNodeList){
+			for(DataNodeInfo d : NameNode.instance.dataNodeList){
 				if(Math.abs(d.getLastSeen()-System.currentTimeMillis())>10000){
 					Logger.log("Client "+ d.getId() + " TIMED OUT. Deleteing it.");
 					String id = d.getId();
 					d.shutDown();
-					NameNode.dataNodeList.remove(i);
+					NameNode.instance.dataNodeList.remove(i);
 
 					NameNode.fs.HandleNodeFailure(id);
 					
-					NameNode.displayDataNodes();
+					NameNode.instance.displayDataNodes();
 					break;
 				}
 				i++;

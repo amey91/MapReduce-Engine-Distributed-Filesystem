@@ -1,20 +1,28 @@
 package filesystem;
 
+import java.io.Serializable;
 
-public class DistributedFile {
+public class DistributedFile implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -4449361261647377875L;
 	Directory parent;
 	String fileName;
 	FileBlock[] blocks;
 	
-	public DistributedFile(FileBlock[] blocks)
-	{
+	public DistributedFile(FileBlock[] blocks){
 		this.parent = null;
 		this.fileName = null;
 		this.blocks = blocks;
 	}
-	
+
 	public String getFileName() {
 		return fileName;
+	}
+	
+	public FileBlock[] getFileBlocks() {
+		return blocks;
 	}
 	
 	public String getFullPath(){

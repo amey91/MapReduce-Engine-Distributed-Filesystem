@@ -5,13 +5,17 @@ import java.awt.List;
 import java.io.BufferedOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Type;
 import java.net.Socket;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import mapreduce.Context;
+import mapreduce.Mapper;
 import filesystem.Directory;
 
 class ccc{
@@ -40,14 +44,9 @@ public class TestClient {
     sock.close();
 */
 	  //File ab = new File();
-	  FileOutputStream fos = new FileOutputStream("C:/Temp/newFile.txt");
-	  byte[] arr = new byte[4];
-	  arr[0] = 'a'; arr[1]='b'; arr[2]='c'; arr[3] =0;
-	  fos.write(arr, 0, 4);
-	  
 	  //Thread.sleep(3000);
     ArrayList<String> classNames=new ArrayList<String>();
-    ZipInputStream zip=new ZipInputStream(new FileInputStream("C:/Temp/test.jar"));
+    ZipInputStream zip=new ZipInputStream(new FileInputStream("E:/example/example3/exp.jar"));
     
     for(ZipEntry entry=zip.getNextEntry();entry!=null;entry=zip.getNextEntry())
         if(entry.getName().endsWith(".class") && !entry.isDirectory()) {
@@ -56,23 +55,51 @@ public class TestClient {
             for(String part : entry.getName().split("/")) {
                     className.append(".");
                 className.append(part);
-   //             if(part.endsWith(".class"))
- //                   className.setLength(className.length()-".class".length());
+                if(part.endsWith(".class"))
+                    className.setLength(className.length()-".class".length());
             }
             classNames.add(className.toString());
         }
     zip.close();
-   JarClassLoader jcl =  new JarClassLoader("C:/Temp/test.jar");
-   //Class<?> c = jcl.loadClass(classNames.get(3)); 
- //  Directory d = (Directory) c.newInstance();
-   //d.getClass();
-   String classes = "";
-   for(String p: classNames)
-	   classes += p;
-   byte[] b = classes.getBytes();
-   fos.write(b, 0, b.length);
-   fos.close();
+   
+    
+   JarClassLoader jcl =  new JarClassLoader("E:/example/example3/exp.jar");
+   Logger.log(classNames.get(0));
+   Class<?> c = jcl.loadClass("temperaturetest.MaxTemperatureMapper123");//classNames.get(0));
+   
+   Type[] t = c.getGenericInterfaces();
+   
+   Mapper<Integer, String, String, Integer> mp = (Mapper<Integer, String, String, Integer>)c.newInstance();
+   mp.map(3, "huj", new Context());
+  }
+  public static Class<?> sendClass() throws IOException, InterruptedException, ClassNotFoundException, InstantiationException, IllegalAccessException{
+	  
+	  	String location = "C:/Users/Amey/workspace/example3/exp.jar";
+	    ArrayList<String> classNames=new ArrayList<String>();
+	    ZipInputStream zip=new ZipInputStream(new FileInputStream(location));
+	    
+	    for(ZipEntry entry=zip.getNextEntry();entry!=null;entry=zip.getNextEntry())
+	        if(entry.getName().endsWith(".class") && !entry.isDirectory()) {
+	            // This ZipEntry represents a class. Now, what class does it represent?
+	            StringBuilder className=new StringBuilder();
+	            for(String part : entry.getName().split("/")) {
+	                    className.append(".");
+	                className.append(part);
+	                if(part.endsWith(".class"))
+	                    className.setLength(className.length()-".class".length());
+	            }
+	            classNames.add(className.toString());
+	        }
+	    zip.close();
+	   
+	    
+	   JarClassLoader jcl =  new JarClassLoader(location);
+	   Logger.log(classNames.get(0));
+	   Class<?> c = jcl.loadClass("temperaturetest.MaxTemperatureMapper123");//classNames.get(0));
+	   Type[] t = c.getGenericInterfaces();
+	   
+	   Mapper<Integer, String, String, Integer> mp = (Mapper<Integer, String, String, Integer>)c.newInstance();
+	   mp.map(3, "huj", new Context());
+	   return c;
   }
 }
-
-   

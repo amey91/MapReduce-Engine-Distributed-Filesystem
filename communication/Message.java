@@ -7,9 +7,7 @@ public class Message implements Serializable{
 	//						 = "start" | "stop"	
 	private static final long serialVersionUID = 6215667127323595530L;
 
-	public String type; 
-	
-	public long jobId;
+	public String type;
 
 	public String fileName;
 	
@@ -21,8 +19,7 @@ public class Message implements Serializable{
 		this.type = type;
 	}
 	
-	public Message(long jobId, String type, String fileName) {
-		this.jobId = jobId;
+	public Message(String type, String fileName) {
 		this.type = type;
 		this.fileName = fileName;
 	}

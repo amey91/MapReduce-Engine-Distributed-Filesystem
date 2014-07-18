@@ -78,6 +78,20 @@ public class FileSystem {
 		}		
 	}
 	public void HandleNodeFailure(String id) {
-		rootDirectory.FixBlocksWith(id);
+		synchronized(lock){
+			rootDirectory.FixBlocksWith(id);
+		}
+	}
+	public DistributedFile getFile(String inputPath)throws FileSystemException {
+		synchronized(lock){
+			String pathNodes[] = inputPath.split( Character.toString(DIRECTORYSEPARATOR));
+			return getPreviousWorkingDirectory(pathNodes).getFile(pathNodes[pathNodes.length-1]);
+		}
+	}
+	public Directory getDirectory(String inputPath)throws FileSystemException {
+		synchronized(lock){
+			String pathNodes[] = inputPath.split( Character.toString(DIRECTORYSEPARATOR));
+			return getThisWorkingDirectory(pathNodes);
+		}
 	}
 }

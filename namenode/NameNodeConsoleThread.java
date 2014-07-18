@@ -24,7 +24,7 @@ public class NameNodeConsoleThread extends Thread{
          		}
          		switch(choice){
 	         		case("5"):
-	         			NameNode.displayDataNodes();
+	         			NameNode.instance.displayDataNodes();
 	        			break;
 	         		default:
 	         			throw new Exception("Invalid Input detected: " + choice);

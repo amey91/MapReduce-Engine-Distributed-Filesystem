@@ -1,22 +1,35 @@
 package mapreduce;
 
+import java.io.Serializable;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import temperaturetest.MaxTemperatureMapper;
 
-public class Job {
+public class Job implements Serializable{
 
-		Mapper mapper;
-		Reducer reducer;
-		Path inputPath;
-		Path outputPath;
-		String jobName;
-		String jobId;
+		/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1588390432253207345L;
+		public String mapperClassName;
+		public String reducerClassName;
+		public String inputPath;
+		public String outputPath;
+		public String jobName;
+		public String jarFile;
+		public String datanodeKey; 
 		
-	
-	public void setJobName(String jobName) {
+		
+	public Job(String datanodeKey, String jobName, String jarPath, String mapperName, String reducerName, String inputPath, String outputPath) {
+		this.datanodeKey = datanodeKey;
 		this.jobName = jobName;
-	}
+		this.mapperClassName = mapperName;
+		this.reducerClassName = reducerName;
+		this.inputPath = inputPath;
+		this.outputPath = outputPath;
+		this.jarFile = jarPath;
+	}/*
 	public int waitForCompletion() {
 		// TODO Auto-generated method stub
 		return 0;
@@ -32,12 +45,15 @@ public class Job {
 		
 	}
 	
-	public void setMapperClass(Class<?> mapperClass) {
+	public void setMapperClass(Class<Mapper<?,?,?,?> > mapperClass) {
 		
 	}
 	
-	public void setReducerClass(Class<?> reducerClass) {
+	public void setReducerClass(Class<Reducer<?,?,?,?> > reducerClass) {
 		// TODO Auto-generated method stub
+		//Reducer r = reducerClass.newInstance();
+		//r.reduce("", "", new Context());
+		
 		
 	}
 
@@ -48,5 +64,5 @@ public class Job {
 
 	public void setOutputValueClass(Class<?> class1) {
 		// TODO Auto-generated method stub
-	}
+	}*/
 }

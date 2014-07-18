@@ -1,5 +1,6 @@
 package datanode;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -22,17 +23,14 @@ public class HDFSToLocal extends Thread {
 		this.localFilePath = localFilePath;
 		this.HDFSFilePath = hDFSFilePath;
 	}
+	// referred to http://stackoverflow.com/questions/2149785/get-size-of-folder-or-file
+	public static void MoveToLocal(String localFilePath, String HDFSFilePath){
 
-	@Override
-	public void run(){
-		// referred to http://stackoverflow.com/questions/2149785/get-size-of-folder-or-file
-
-		java.io.File file = new java.io.File(localFilePath);
+		File file = new File(localFilePath);
 		if(!file.canWrite()){
 			Logger.log("Invalid output file location");
 			//return;
 		}
-
 
 		try {
 
@@ -58,7 +56,7 @@ public class HDFSToLocal extends Thread {
 				
 				Boolean success = false;
 				
-				
+				// create a temp file for the current fileblock
 				String tempFileName = DataNode.rootPath + (FileSystem.DIRECTORYSEPARATOR +"__TEMP" + counter);
 				files[counter] = tempFileName;
 				
@@ -97,5 +95,9 @@ public class HDFSToLocal extends Thread {
 		} catch (InvalidDataNodeException e) {
 			DataNode.reset();
 		}
+	}
+	@Override
+	public void run(){
+		MoveToLocal(localFilePath, HDFSFilePath);
 	}
 }

@@ -180,6 +180,15 @@ public class Communicator {
 		return totalTransferred;
 	}
 
+	public static Socket CreateTaskSocket(String clientKey) throws IOException {
+		String[] ipPort = AddressToIPPort.addressToIPPort(clientKey);
+			
+		String ip = ipPort[0];
+		int port = Integer.parseInt(ipPort[2]);
+		Socket sendingSocket = new Socket(InetAddress.getByName(ip),port);
+		return sendingSocket;
+	}
+	
 	public static Socket CreateDataSocket(String clientKey) throws IOException {
 		String[] ipPort = AddressToIPPort.addressToIPPort(clientKey);
 			

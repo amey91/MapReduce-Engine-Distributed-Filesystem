@@ -112,7 +112,7 @@ public class DataNodeInfo implements Comparable<DataNodeInfo>{
 			for(FileBlock fb : tempFileBlocks){
 				for(String deleteLocation:fb.getNodeLocations()){
 					if(!id.equals(deleteLocation))
-						NameNode.deleteThread.push(fb.getBlockFileName(), deleteLocation);
+						NameNode.instance.deleteThread.push(fb.getBlockFileName(), deleteLocation);
 				}
 			}//end of push to delete thread	
 			

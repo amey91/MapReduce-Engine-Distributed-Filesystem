@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 
+import mapreduce.Job;
 import commons.Logger;
 import conf.Constants;
 import filesystem.DistributedFile;
@@ -18,10 +19,10 @@ import filesystem.FileSystemException;
 public class NameNode extends Thread implements NameNodeInterface {
 	// register does not return id for mapper since ID = ip, port
 
-	public static ArrayList<DataNodeInfo> dataNodeList = new ArrayList<DataNodeInfo>();
+	public ArrayList<DataNodeInfo> dataNodeList = new ArrayList<DataNodeInfo>();
 
-	public static int currentBlockNumber = 0;
-	public static DeleteFileThread deleteThread;
+	public int currentBlockNumber = 0;
+	public DeleteFileThread deleteThread;
 
 	static FileSystem fs = new FileSystem();
 	public static NameNode instance;
@@ -31,7 +32,10 @@ public class NameNode extends Thread implements NameNodeInterface {
 				return;
 		throw new InvalidDataNodeException();
 	}
-
+	
+	private NameNode(){
+	}
+	
 	public ArrayList<String> ls(String clientKey, String dirPath)throws RemoteException, FileSystemException, InvalidDataNodeException{
 		checkKey(clientKey);
 
@@ -58,7 +62,7 @@ public class NameNode extends Thread implements NameNodeInterface {
 		checkKey(clientKey);
 
 		long size1 = fileSize/conf.Constants.MIN_BLOCK_SIZE;
-		long size2 = NameNode.dataNodeList.size();
+		long size2 = dataNodeList.size();
 
 		//take maximum out of these values so that no. of blocks are minimized
 		long noOfBlocks = Math.min(size1, size2);
@@ -71,7 +75,7 @@ public class NameNode extends Thread implements NameNodeInterface {
 		// store this fileblock into the temporary fileblocks so that origin failure is handled
 		FileBlock[] resultBlock = getFileAllocation(newDFSFileName,(int)noOfBlocks);
 
-		for(DataNodeInfo d : NameNode.dataNodeList)
+		for(DataNodeInfo d : dataNodeList)
 			if(d.getId().equals(clientKey)){
 				d.addFileProxy(newDFSFileName);
 				d.setFileBLocks(resultBlock);
@@ -97,7 +101,7 @@ public class NameNode extends Thread implements NameNodeInterface {
 				b.delete();
 		}
 
-		for(DataNodeInfo d : NameNode.dataNodeList)
+		for(DataNodeInfo d : dataNodeList)
 		{
 			if(d.getId().equals(clientKey)){
 				if(!success)
@@ -118,7 +122,7 @@ public class NameNode extends Thread implements NameNodeInterface {
 		}
 
 		DataNodeInfo info = new DataNodeInfo(myKey);
-		if(NameNode.dataNodeList.contains(info)){
+		if(dataNodeList.contains(info)){
 			throw new RemoteException("DataNode with duplicate key "+ myKey +" trying to register!");
 		}
 		dataNodeList.add(info);
@@ -129,7 +133,7 @@ public class NameNode extends Thread implements NameNodeInterface {
 		checkKey(clientKey);
 
 		//Logger.log("Got heartbeat for: "+clientKey);
-		for(DataNodeInfo d : NameNode.dataNodeList){
+		for(DataNodeInfo d : dataNodeList){
 			if(d.getId().equals(clientKey))
 				d.setLastSeen(System.currentTimeMillis());
 			d.setFreeSpace(freeSpace);
@@ -138,8 +142,9 @@ public class NameNode extends Thread implements NameNodeInterface {
 	}
 
 	@Override
-	public String test() throws RemoteException {
-		return "RMI IS NOW WORKING!!";
+	public int submitJob(String clientKey, Job j) throws RemoteException, InvalidDataNodeException {
+		checkKey(clientKey);
+		return 0;
 	}
 
 	public static void main(String args[]){
@@ -157,22 +162,22 @@ public class NameNode extends Thread implements NameNodeInterface {
 			System.err.println("Server ready");
 			new Thread(new NameNodeConsoleThread()).start();
 			new Thread(new TimeOutThread()).start();
-			deleteThread =  new DeleteFileThread();
-			deleteThread.start();
+			instance.deleteThread =  new DeleteFileThread();
+			instance.deleteThread.start();
 		} catch(Exception e){
 			System.out.println("Server exception: " + e.toString());
 			e.printStackTrace();
 		}
 
 	}
-	public static void displayDataNodes() {
+	public void displayDataNodes() {
 		for(DataNodeInfo node : dataNodeList){
 			Logger.log("Key: "+ node.getId() + " | STORING: " + node.getsizeOfStoredFiles() + " | FREE: "+ node.getFreeSpace());
 		}
 
 	}
 
-	private static FileBlock[] getFileAllocation(String DFSFileName, int no_of_blocks){
+	private FileBlock[] getFileAllocation(String DFSFileName, int no_of_blocks){
 		Logger.log("no of blocks:" + no_of_blocks);
 
 		Collections.sort(dataNodeList);
@@ -231,6 +236,7 @@ public class NameNode extends Thread implements NameNodeInterface {
 	public ArrayList<String> getNewLocations(String clientKey, ArrayList<String> doneList,
 			ArrayList<String> failList) throws RemoteException,
 			InvalidDataNodeException, FileSystemException {
+		
 		checkKey(clientKey);
 		
 		Collections.sort(dataNodeList);
@@ -243,11 +249,15 @@ public class NameNode extends Thread implements NameNodeInterface {
 					break;
 			}
 		}
-		
 		if(returnList.size() < numRequired)
 			return null; //Dont have other options, send fail
 		else
 			return returnList;
+	}
+
+	public String findAppropriateNode(DistributedFile f) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

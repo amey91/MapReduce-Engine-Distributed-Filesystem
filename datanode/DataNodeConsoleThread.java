@@ -7,8 +7,11 @@ import java.io.InputStreamReader;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
+import mapreduce.Job;
 import namenode.InvalidDataNodeException;
 import commons.Logger;
+import commons.TestClient;
+import communication.Communicator;
 import filesystem.FileSystemException;
 
 public class DataNodeConsoleThread extends Thread{
@@ -87,10 +90,12 @@ public class DataNodeConsoleThread extends Thread{
          			mkdir(choices[1]);
          			 break;
          		case("startjob"):
-         			if(choices.length!=2){
-         				throw new IOException("startJob <jarFileName.jar>");
+         			if(choices.length!=7){
+         				throw new IOException("startJob <jobName> <jarFileName.jar> <mapperClass> <reducerClass> <inputFile> <outputPath>");
          			}
-         			// TODO
+
+         			startJob(choices);
+         			break;
          		case("stopjob"):
          			if(choices.length!=2){
          				throw new IOException("stopJob <jobId>");
@@ -124,7 +129,7 @@ public class DataNodeConsoleThread extends Thread{
     						+ "\n ls <folderPath>"
     						+ "\n rm <fileName>"
     						+ "\n mkdir <folderPath>"
-    						+ "\n startJob <jarFileName.jar>"
+    						+ "\n startJob <jobName> <jarFileName.jar> <mapperClass> <reducerClass> <inputFile> <outputPath>"
     						+ "\n stopJob <jobId>"
     						+ "\n monitor"
     						+ "\n key"
@@ -137,12 +142,27 @@ public class DataNodeConsoleThread extends Thread{
 			} catch(InvalidDataNodeException e){
 				DataNode.reset();
 			}catch (IOException e) {
-				// TODO Auto-generated catch block
-				log(e.getMessage());
+				Logger.log("Error while parsing input: "+e.getMessage());
 			}
 		}//end of while
 	}
 	
+	private void startJob(String[] choices) throws InvalidDataNodeException {
+		
+		// TODO 
+		
+		try {
+			Class<?> c = TestClient.sendClass();
+			Job job = new Job(DataNode.key, choices[1], choices[2], choices[3], choices[4], choices[5], choices[6]);
+			DataNode.nameNode.submitJob(DataNode.key, job);
+		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IOException | InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+	}
+
 	private void ls(String remoteFilePath) throws InvalidDataNodeException{	
 		
 		try {

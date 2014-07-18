@@ -28,7 +28,7 @@ public class DataNode {
 	static ServerSocket jobSocket;
 	static ServerSocket fileSocket;
 	static NameNodeInterface nameNode;
-	static Path rootPath;
+	public static Path rootPath;
 	static String key;
 	public static long freeSpace=0;
 	static Object freeSpaceLock = new Object();
@@ -66,7 +66,7 @@ public class DataNode {
 			nameNode = (NameNodeInterface) registry.lookup("RMI");
 	       
 	        DataNode.key = DataNode.generateKey(fileListeningPort,jobListeningPort);
-	        Logger.log(nameNode.test());
+	       // Logger.log(nameNode.test());
 	        nameNode.register(key);
 	        
 		    } catch (Exception e) {

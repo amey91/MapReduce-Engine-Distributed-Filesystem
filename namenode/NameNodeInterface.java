@@ -4,6 +4,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
+import mapreduce.Job;
 import filesystem.FileBlock;
 import filesystem.FileSystemException;
 
@@ -27,8 +28,7 @@ public interface NameNodeInterface extends Remote{
 		
 		public void ConfirmDeletion(String clientKey, String blockName, String nodeLocation)throws RemoteException, InvalidDataNodeException;
 		
-		// TODO delete below and its implementation
-		public String test() throws RemoteException;
+		public int submitJob(String clientKey, Job j) throws InvalidDataNodeException, RemoteException;
 
 		public FileBlock[] getFileBlocks(String clientKey, String HDFSFilePath) throws RemoteException, InvalidDataNodeException, FileSystemException;
 

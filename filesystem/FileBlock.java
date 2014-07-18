@@ -44,7 +44,7 @@ public class FileBlock implements Serializable{
 		Logger.log("deleting block: " + blockName);
 		
 		for(String nodeLocation: dataNodeLocations){
-			NameNode.deleteThread.push(blockName, nodeLocation);
+			NameNode.instance.deleteThread.push(blockName, nodeLocation);
 		}
 	}
 	

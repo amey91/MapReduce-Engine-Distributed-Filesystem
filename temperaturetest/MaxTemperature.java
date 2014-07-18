@@ -15,7 +15,7 @@ public class MaxTemperature {
       System.err.println("Usage: MaxTemperature <input path> <output path>");
       System.exit(-1);
     }
-    
+    /*
     Job job = new Job();
     //job.setJarByClass(MaxTemperature.class);
     job.setJobName("Max temperature");
@@ -30,6 +30,9 @@ public class MaxTemperature {
     job.setOutputValueClass(Integer.class);
     
     System.exit(job.waitForCompletion());
+    
+    Job job2 = new Job();
+    job2.waitForCompletion();*/
   }
 }
 // ^^ MaxTemperature
