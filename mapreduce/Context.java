@@ -16,7 +16,7 @@ public class Context {
 	}
 
 	public void write(String key, Integer value) {
-		
+		list.add(arg0)
 	}
 
 	public Comparable<?>[] getMapperOutputKeys(){
