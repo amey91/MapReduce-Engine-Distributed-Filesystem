@@ -5,6 +5,7 @@ import java.net.Socket;
 
 import mapreduce.Mapper;
 import namenode.InitTask;
+import commons.JarLoader;
 import communication.Communicator;
 import communication.KeyListMessage;
 import communication.Message;
@@ -29,7 +30,7 @@ public class JobRequestProcessor extends Thread{
 				
 				String jarFileLocalPath = DataNode.rootPath.toString()+FileSystem.DIRECTORYSEPARATOR + t.getJob().getID() + ".jar";
 				HDFSToLocal.MoveToLocal(jarFileLocalPath, t.getJarFile());
-				Class<Mapper> mapper = getClassFromJar(jarFileLocalPath, t.getMapperName());
+				Class<Mapper> mapper = (Class<Mapper>) JarLoader.getClassFromJar(jarFileLocalPath, t.getMapperName());
 				
 				Boolean initTask = true;
 				KeyListMessage klm = runInitMapper(mapper, blockName, initTask);
