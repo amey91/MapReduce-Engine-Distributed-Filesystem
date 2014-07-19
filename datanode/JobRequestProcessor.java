@@ -5,7 +5,9 @@ import java.net.Socket;
 
 import mapreduce.Mapper;
 import namenode.InitTask;
+import commons.InitKeyValues;
 import commons.JarLoader;
+import commons.LaunchProcess;
 import communication.Communicator;
 import communication.KeyListMessage;
 import communication.Message;
@@ -33,7 +35,7 @@ public class JobRequestProcessor extends Thread{
 				Class<Mapper> mapper = (Class<Mapper>) JarLoader.getClassFromJar(jarFileLocalPath, t.getMapperName());
 				
 				Boolean initTask = true;
-				KeyListMessage klm = runInitMapper(mapper, blockName, initTask);
+				KeyListMessage klm = InitKeyValues.runInitMapper(mapper, blockName, initTask);
 				
 				Communicator.sendMessage(socket, klm);
 				

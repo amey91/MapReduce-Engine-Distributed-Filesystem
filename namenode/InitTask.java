@@ -39,6 +39,7 @@ public class InitTask extends Task {
 		return mapperName;
 	}
 
+	// run partition values for keyset within 
 	public Comparable<?>[] execute(){
 		FileBlock[] blocks = file.getFileBlocks();
 		long totalSizeEstimate = 0;
