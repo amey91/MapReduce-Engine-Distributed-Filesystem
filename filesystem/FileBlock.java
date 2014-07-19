@@ -71,13 +71,13 @@ public class FileBlock implements Serializable{
 		ArrayList<String> doneList = new ArrayList<String>();
 		int location = 0, pos = 0;
 		for(String s: dataNodeLocations){
-			pos++;
 			if(s.equals(id)){
 				failList.add(s);
 				location = pos;
 			}
 			else
 				doneList.add(s);
+			pos++;
 		}
 		if(failList.size() == 0)
 			return;
