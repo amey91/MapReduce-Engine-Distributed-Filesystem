@@ -6,10 +6,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.Socket;
 
+import namenode.InitTask;
 import namenode.InvalidDataNodeException;
 import commons.Logger;
 import communication.Communicator;
+import communication.KeyListMessage;
 import communication.Message;
+import communication.TaskMessage;
 import filesystem.FileSystem;
 
 public class FileRequestProcessor extends Thread{
@@ -97,6 +100,26 @@ public class FileRequestProcessor extends Thread{
 						e1.printStackTrace();
 					}
 				}
+			} else if(inMessage.type.equals("InitTask")){
+				
+				// run sample mapper task
+				// calculate total size estimate
+				// return keys
+				
+				TaskMessage tm = (TaskMessage) inMessage;
+				InitTask t = (InitTask) tm.task;
+				String blockLocalPath = DataNode.rootPath + (FileSystem.DIRECTORYSEPARATOR + tm.fileName);
+				
+				
+				String jarFileLocalPath = DataNode.rootPath.toString()+FileSystem.DIRECTORYSEPARATOR + t.getJob().getID() + ".jar";
+				HDFSToLocal.MoveToLocal(jarFileLocalPath, t.getJarFile());
+				
+				TaskRunnerManager trm = DataNode.getTaskRunnerManager();
+				KeyListMessage klm = trm.LaunchInitTask( jarFileLocalPath, t.getMapperName(), blockLocalPath);
+				
+				Communicator.sendMessage(socket, klm);
+				
+				socket.close();
 			}
 		} catch (IOException|InterruptedException|ClassNotFoundException e) {
 			//TODO delete

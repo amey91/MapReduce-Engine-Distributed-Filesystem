@@ -200,7 +200,7 @@ public class Directory implements Serializable{
 		for(DistributedFile f: files)
 			if(f.getFileName().equals(fileName))
 				return f;
-		throw new FileSystemException("File Not Found");
+		throw new FileSystemException(fileName + "File Not Found");
 	}
 	
 }

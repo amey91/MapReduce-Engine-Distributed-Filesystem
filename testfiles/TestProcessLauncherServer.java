@@ -50,14 +50,14 @@ public class TestProcessLauncherServer extends Thread {
 			InputStreamReader isr = new InputStreamReader(is);
 			BufferedReader br = new BufferedReader(isr);
 			Thread.sleep(3000);
-			runningProcess.destroy();
-			/*String line;
+			//runningProcess.destroy();
+			String line;
 			System.out.printf("Output of running %s is:\n",
 					Arrays.toString(command));
 			while ((line = br.readLine()) != null) {
 				System.out.println(line);
 			}
-			*/
+			
 			//Wait to get exit value
 			int exitValue = process.waitFor();
 			System.out.println("\n\nExit Value is " + exitValue);

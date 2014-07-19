@@ -6,6 +6,7 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 
 import mapreduce.Mapper;
+import commons.Logger;
 import communication.Communicator;
 import communication.KeyListMessage;
 import communication.MapperTaskMessage;
@@ -30,7 +31,7 @@ public class TaskRunnerManager extends Thread {
 	String rootPath;
 	int taskRunnerPort;
 	Boolean isReady = false;
-	private Boolean isRunning;
+	Boolean isRunning = false;
 	Thread listeningThread;
 	long lastHeartBeat;
 	double percentCompletion;
@@ -46,13 +47,19 @@ public class TaskRunnerManager extends Thread {
 		if(runningProcess!=null)
 			runningProcess.destroy();
 		try{
-			String[] command = {"java.exe","-cp", rootPath, "taskrunner.TaskRunner", String.valueOf(this.listeningPort)};
+			//String[] command = {"java.exe","-cp", "C:/Users/Amey/workspace/example3", "taskrunner.TaskRunner", String.valueOf(this.listeningPort)};
+			String[] command = {"java.exe","-cp", "E:/example/example3", "taskrunner.TaskRunner", String.valueOf(this.listeningPort)};
 			// String[] command = {"java.exe","-cp", "./", "jobhandler.StartJob","testJobName","testrootpath","testclassName","args"};
 			ProcessBuilder probuilder = new ProcessBuilder( command );
 			//probuilder.directory(new File("c:/Temp"));
 			probuilder.directory(new File(rootPath));
 			Process process = probuilder.start();
 			this.runningProcess = process;
+			
+			System.out.printf("Output of running %s is:\n",
+					Arrays.toString(command));
+			
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -61,6 +68,7 @@ public class TaskRunnerManager extends Thread {
 	
 	@Override
 	public void run(){
+		Logger.log("creating new jvm");
 			CreateNewJVM();
 			Communicator.listenForMessages(listeningSocket, this, TaskRunnerListeningThread.class);
 	}

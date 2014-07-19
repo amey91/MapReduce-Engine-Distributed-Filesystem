@@ -2,6 +2,7 @@ package testfiles;
 
 
 import jarmanager.JarClassLoader;
+import jarmanager.JarLoader;
 
 import java.awt.List;
 import java.io.BufferedOutputStream;
@@ -24,6 +25,9 @@ import filesystem.Directory;
 
 public class TestClient {
 	public static void main(String[] argv) throws Exception {
+		
+		Class<Mapper> mhj =(Class<Mapper>) JarLoader.getClassFromJar("C:\\Temp\\1/0.jar", "temperaturetest.Mapper1");
+		Logger.log("SDssd");
 		/*Socket sock = new Socket("127.0.0.1", 23456);    
 
     byte[] mybytearray = new byte[1024];

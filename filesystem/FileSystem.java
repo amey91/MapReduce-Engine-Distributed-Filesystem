@@ -83,6 +83,7 @@ public class FileSystem {
 	}
 	public DistributedFile getFile(String inputPath)throws FileSystemException {
 		synchronized(lock){
+			Logger.log(inputPath);
 			String pathNodes[] = inputPath.split( Character.toString(DIRECTORYSEPARATOR));
 			return getPreviousWorkingDirectory(pathNodes).getFile(pathNodes[pathNodes.length-1]);
 		}

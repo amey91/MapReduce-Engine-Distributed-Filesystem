@@ -18,7 +18,7 @@ public class TestProcessLauncherClient {
 		sc.nextLine();
 		BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(file));
 		byte[] byteArray = new byte[1024];
-		while (i<10) {
+		while (i<100) {
 			
 			out.write((i + "").getBytes());
 			if(i%10==0)

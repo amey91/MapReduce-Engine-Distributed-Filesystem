@@ -15,6 +15,7 @@ public class MaxTemperatureMapper
   public void map(Integer key, String value, Context context)
       throws IOException, InterruptedException {
     
+	  
     String line = value.toString();
     String year = line.substring(15, 19);
     int airTemperature;

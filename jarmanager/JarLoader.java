@@ -26,9 +26,12 @@ class ccc{
 
 public class JarLoader {
 	public static Class<?> getClassFromJar(String localFileLocation, String className) {
-		Class<?> c = null;
+		
 		try{
-			ArrayList<String> classNames=new ArrayList<String>();
+			JarClassLoader jcl =  new JarClassLoader(localFileLocation);
+			return jcl.loadClass(className);
+			//classNames.get(0));
+			/*ArrayList<String> classNames=new ArrayList<String>();
 			//ZipInputStream zip=new ZipInputStream(new FileInputStream("E:/example/example3/exp.jar"));
 			ZipInputStream zip=new ZipInputStream(new FileInputStream(localFileLocation));
 
@@ -44,17 +47,11 @@ public class JarLoader {
 					}
 					classNames.add(className.toString());
 				}
-			zip.close();
+			zip.close();*/
 
 
-			JarClassLoader jcl =  new JarClassLoader(localFileLocation);
-			Logger.log(classNames.get(0));
-			c = jcl.loadClass(className);//classNames.get(0));
-
-			Type[] t = c.getGenericInterfaces();
-
-			Mapper<Integer, String, String, Integer> mp = (Mapper<Integer, String, String, Integer>)c.newInstance();
-			mp.map(3, "huj", new Context());
+			
+			//Logger.log(classNames.get(0));
 
 		}
 		catch(Exception e){
@@ -62,7 +59,7 @@ public class JarLoader {
 			e.printStackTrace();
 		}
 
-		return c;
+		return null;
 	}
 	/*
 

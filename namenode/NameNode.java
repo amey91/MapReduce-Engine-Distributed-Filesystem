@@ -26,6 +26,8 @@ public class NameNode extends Thread implements NameNodeInterface {
 
 	static FileSystem fs = new FileSystem();
 	public static NameNode instance;
+	
+	JobTrackerThread jtThread;
 	private void checkKey(String clientKey) throws InvalidDataNodeException{
 		for(DataNodeInfo d: dataNodeList)
 			if(d.getId().equals(clientKey))
@@ -145,7 +147,7 @@ public class NameNode extends Thread implements NameNodeInterface {
 	@Override
 	public int submitJob(String clientKey, Job j) throws RemoteException, InvalidDataNodeException {
 		checkKey(clientKey);
-		return 0;
+		return jtThread.addJob(j);
 	}
 
 	public static void main(String args[]){
@@ -163,8 +165,12 @@ public class NameNode extends Thread implements NameNodeInterface {
 			System.err.println("Server ready");
 			new Thread(new NameNodeConsoleThread()).start();
 			new Thread(new TimeOutThread()).start();
+			
 			instance.deleteThread =  new DeleteFileThread();
 			instance.deleteThread.start();
+			instance.jtThread = new JobTrackerThread();
+			instance.jtThread.start();
+			
 		} catch(Exception e){
 			System.out.println("Server exception: " + e.toString());
 			e.printStackTrace();

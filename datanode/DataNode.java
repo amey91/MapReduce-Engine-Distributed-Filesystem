@@ -50,7 +50,7 @@ public class DataNode {
 	static int numOfMappers = 6;
 
 	public static void main(String args[]) {
-
+				
 		if(args.length!=3)
 		{
 			// TODO Logger.log("Usage: DataNode <RMIRegistry> <bindname> <rootPath>");
@@ -95,28 +95,28 @@ public class DataNode {
 		fcThread.start();
 		
 		// intialize mapper/reducer processing environments
+
 		numOfMappers = getNumberOfMappers();
 		taskRunnerManagers = new TaskRunnerManager[numOfMappers];
 		Logger.log("NUM OF MAPPERS  = " + numOfMappers);
 		for(int i =0; i< taskRunnerManagers.length;i++){
 			try {
 				taskRunnerManagers[i] = new TaskRunnerManager(rootPath.toString());
+				taskRunnerManagers[i].start();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-		
-		
-		
-		
 		Communicator.listenForMessages(fileSocket, null, FileRequestProcessor.class);
+
+				
 		//TODO
 		// Communicator.listenForMessages(jobSocket, null, JobRequestProcessor.class);
 	}
 
 	private static int getNumberOfMappers() {
 		// default
-		int cores = 6;
+		int cores = 1;
 		Logger.log("Inside!");
 		File cpuInfo = new File("/proc/cpuinfo");
 		//check if AFS /proc/cpuinfo exists
@@ -237,9 +237,15 @@ public class DataNode {
 	}
 
 	public static TaskRunnerManager getTaskRunnerManager() {
-		for(TaskRunnerManager trm: taskRunnerManagers)
-			if(trm.isReady() && !trm.isRunning())
-				return trm;
+		for(int i =0; i< taskRunnerManagers.length;i++){
+			Logger.log("trm"+i);
+			if(taskRunnerManagers[i]==null)
+				Logger.log("sddfs");
+			if(taskRunnerManagers[i].isReady() && !taskRunnerManagers[i].isRunning())
+				return taskRunnerManagers[i];
+		}
+		//TODO none ready -> put in queue?
+		Logger.log("No Task Runner Ready");
 		return null;
 		
 	}	

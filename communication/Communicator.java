@@ -75,7 +75,7 @@ public class Communicator {
 	    InputStream is = socket.getInputStream();
 
 	    long bytesLeft = fileSize;
-	    
+
 	    while(bytesLeft>0){
 	    	
 			int bytesToRead = bytearray.length;
@@ -84,7 +84,7 @@ public class Communicator {
 			
 	    	int bytesRead = is.read(bytearray, 0, bytesToRead);
 	    	
-	    	if(bytesRead==0)
+	    	if(bytesRead<=0)
 	    		break;
 	    	
 	        bos.write(bytearray, 0, bytesRead);
@@ -182,12 +182,13 @@ public class Communicator {
 	}
 
 	public static Socket CreateTaskSocket(String clientKey) throws IOException {
-		String[] ipPort = AddressToIPPort.addressToIPPort(clientKey);
+		return CreateDataSocket(clientKey);
+		/*String[] ipPort = AddressToIPPort.addressToIPPort(clientKey);
 			
 		String ip = ipPort[0];
 		int port = Integer.parseInt(ipPort[2]);
 		Socket sendingSocket = new Socket(InetAddress.getByName(ip),port);
-		return sendingSocket;
+		return sendingSocket;*/
 	}
 	
 	public static Socket CreateDataSocket(String clientKey) throws IOException {

@@ -152,10 +152,9 @@ public class DataNodeConsoleThread extends Thread{
 		// TODO 
 		
 		try {
-			Class<?> c = TestClient.sendClass();
 			Job job = new Job(DataNode.key, choices[1], choices[2], choices[3], choices[4], choices[5], choices[6]);
 			DataNode.nameNode.submitJob(DataNode.key, job);
-		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IOException | InterruptedException e) {
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

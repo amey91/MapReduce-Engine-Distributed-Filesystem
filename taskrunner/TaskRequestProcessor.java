@@ -26,6 +26,8 @@ public class TaskRequestProcessor extends Thread {
 				MapperTaskMessage mtm = (MapperTaskMessage) inMessage;
 				RunMapper rMapper  = new RunMapper(mtm.jarFileLocalPath, mtm.mapperClassName, mtm.blockLocalPath, 
 						mtm.outputPath, true, TaskRunner.dataNodeListeningPort);
+				
+				rMapper.Run(socket);
 				break;
 
 			case("Mapper"):

@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.net.Socket;
 
+import commons.Logger;
 import communication.Communicator;
 import communication.HeartbeatMessage;
 import communication.KeyListMessage;
@@ -31,18 +32,21 @@ public class RunMapper {
 		this.blockLocalPath = blockLocalPath;
 		this.outputPath = outputPath;
 		this.isInitTask = isInitTask;
-		
-		
+		this.dataNodeListeningPort = dataNodeListeningPort;
 	}
 	
-	public void Run(){
-		
+	public void Run(Socket incomingSocket){
+		try{
 		
 		try {
-			Mapper m = mapperClass.newInstance();Socket heartBeatSocket = new Socket("127.0.0.1", dataNodeListeningPort);
+			Mapper m = mapperClass.newInstance();
+			Logger.log("dataNodeListeningPort = "+dataNodeListeningPort);
+	
+			Socket heartBeatSocket = new Socket("127.0.0.1", dataNodeListeningPort);
 
 			RandomAccessFile file = new RandomAccessFile(blockLocalPath, "r");
 			long fileLength = file.length();
+
 			if(isInitTask){
 
 				Context context = new Context();
@@ -53,14 +57,18 @@ public class RunMapper {
 					
 					long location = (long) (Math.random()*fileLength);
 					file.seek(location);
-					while(file.read()!='\n');
+					//while(file.read()!='\n');
+					
 					String s = file.readLine();
+
+					Logger.log(s);
 					m.map(0, s, context);
+					totalRead += s.length();
 				}
 				long estimate = (context.getMapperOutputSize()*fileLength)/readRequired;
 
 				KeyListMessage message = new KeyListMessage("InitKeyListMessage", context.getMapperOutputKeys(), estimate);
-				Communicator.sendMessage(heartBeatSocket, message);
+				Communicator.sendMessage(incomingSocket, message);
 				file.close();
 			} 
 			else{
@@ -102,7 +110,11 @@ public class RunMapper {
 			}
 		} catch (InstantiationException|IllegalAccessException|IOException|InterruptedException e) {
 			// TODO Auto-generated catch block
+			Logger.log(e.getMessage());
 			e.printStackTrace();
 		} 
+		}catch(Exception ex){
+			Logger.log("2"+ex.getMessage());
+		}
 	}
 }

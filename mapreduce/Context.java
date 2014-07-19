@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 public class Context {
 
-	ArrayList< Comparable<?> > list;
+	ArrayList< Comparable<?> > list = new ArrayList< Comparable<?> >();
 	int size = 0;
 	public Context(String outputPath) {//For mapper/reducerTask
 	}
@@ -13,7 +13,7 @@ public class Context {
 	public Context() { //For InitTask
 
 	}
-
+ 
 	public void write(Comparable<?> key, Object value) {
 		list.add(key);
 	}

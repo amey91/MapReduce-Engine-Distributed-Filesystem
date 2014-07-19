@@ -19,9 +19,11 @@ public class TaskRunnerListeningThread extends Thread {
 
 	@Override
 	public void run(){
-		Message inMessage;
 		try {
-			inMessage = Communicator.receiveMessage(socket);Logger.log("received message: " + inMessage.type);
+
+			Message inMessage = Communicator.receiveMessage(socket);Logger.log("received message: " + inMessage.type);
+
+			Logger.log("Received message from taskRunner: " + inMessage.type);
 			
 			if(inMessage.type.equals("TRConfirmation")){
 				

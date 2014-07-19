@@ -60,25 +60,29 @@ public class InitTask extends Task {
 				keys = (KeyListMessage)Communicator.sendAndReceiveMessage(socket, m);
 				
 				arr[iter] = keys.keyList;
+
 				totalArrayLength += arr[iter].length;
 				totalSizeEstimate += keys.outputSizeEstimate;
 				
+				//for(Comparable<?> c:arr[iter])
+					//Logger.log((String)c);
 			} catch (IOException | InterruptedException | ClassNotFoundException e) {
 				e.printStackTrace();
 			}
 			iter++;
 		}
-		Comparable<?> mergedArray[] = new Comparable<?>[totalArrayLength];
+		Comparable<?>[] mergedArray = new Comparable<?>[totalArrayLength];
 		
 		int loc = 0;
 		for(int i=0; i<blocks.length; i++){
-			System.arraycopy(mergedArray, loc, arr[i], 0, arr[i].length);
-			loc+=arr[i].length;
+			for(Comparable<?> c:arr[i])
+				mergedArray[loc++] = c;
 		}
+		
 		Arrays.sort(mergedArray);
 		
 		
-		int numberOfReducers = (int) (totalSizeEstimate / Constants.MAX_REDUCER_SIZE);
+		int numberOfReducers = Math.min( (int) (totalSizeEstimate / Constants.MAX_REDUCER_SIZE), NameNode.instance.dataNodeList.size());
 		
 		Comparable<?>[] ranges = new Comparable<?>[numberOfReducers-1];
 		int perSegmentSize = totalArrayLength/numberOfReducers;
