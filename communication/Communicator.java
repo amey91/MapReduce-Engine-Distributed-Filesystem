@@ -19,7 +19,7 @@ import java.net.UnknownHostException;
 import commons.AddressToIPPort;
 import commons.Logger;
 
-
+// this class was created by me in the last DS assignment. I have reused it almost completely
 public class Communicator {
 	
 	// accept created socket and do not close it after use
@@ -138,6 +138,7 @@ public class Communicator {
 			}
 		}//end of true	
 	}
+	
 	public static long sendStream(Socket socket, BufferedInputStream bis,
 			long streamLength) throws IOException {
 		Socket[] s = new Socket[1];

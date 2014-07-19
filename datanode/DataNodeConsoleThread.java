@@ -7,10 +7,10 @@ import java.io.InputStreamReader;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
+import testfiles.TestClient;
 import mapreduce.Job;
 import namenode.InvalidDataNodeException;
 import commons.Logger;
-import commons.TestClient;
 import communication.Communicator;
 import filesystem.FileSystemException;
 

@@ -15,7 +15,7 @@ import filesystem.FileSystem;
 public class FileRequestProcessor extends Thread{
 	Socket socket;
 
-	public FileRequestProcessor(Object rorTable, Socket a){
+	public FileRequestProcessor(Object unused, Socket a){
 		this.socket = a; 
 	}
 

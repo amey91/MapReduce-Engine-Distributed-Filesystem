@@ -91,7 +91,7 @@ public class NameNode extends Thread implements NameNodeInterface {
 	public void confirmLocalToHDFS(String clientKey, Boolean success, String fileName, FileBlock[] blocks)throws RemoteException, FileSystemException, InvalidDataNodeException{
 		checkKey(clientKey);
 
-		
+		Logger.log("Inside confirmlocaltohdfs: " + clientKey + " " + success + " " + fileName);
 		if(success){
 			DistributedFile file = new DistributedFile(blocks);
 			fs.InsertFile(fileName, file);
@@ -109,6 +109,7 @@ public class NameNode extends Thread implements NameNodeInterface {
 				
 				d.deleteTempFileBlock(blocks);
 				d.deleteFileProxy(fileName);
+				
 			}
 		}
 

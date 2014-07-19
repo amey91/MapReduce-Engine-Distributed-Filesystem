@@ -179,6 +179,8 @@ class DistFile{
 	Boolean[] successArray = new Boolean[Constants.REPLICATION_FACTOR];
 	
 	void report(Boolean success, String blockName){
+
+		Logger.log("File " + HDFSFilePath + success + blockName);
 		if(success == false){
 			try {
 				DataNode.nameNode.confirmLocalToHDFS(DataNode.key, false, HDFSFilePath, fileBlocks);
@@ -194,20 +196,24 @@ class DistFile{
 		boolean complete = true;
 		
 		//check which block sent the confirmation
-		for(int i=0;i<Constants.REPLICATION_FACTOR;i++)
+		for(int i=0;i<blocks.length;i++)
 			if(blocks[i].blockName.equals(blockName))
 				successArray[i] = true;
 		
 		for(Boolean b: successArray)
 			if(!b)//some confirmation not received
 				complete = false;
-		
+
+		//Logger.log("File " + HDFSFilePath + successArray[0] + successArray[1] + successArray[2]);
 
 		try {
+
 			if(complete){
 				for(int i=0; i<blocks.length; i++)
 					fileBlocks[i].setSize(blocks[i].size);
 				//Got all confirmations, now send confirmation
+
+				Logger.log("sending confirmation");
 				DataNode.nameNode.confirmLocalToHDFS(DataNode.key, true, HDFSFilePath, fileBlocks);
 			}
 		} catch (RemoteException | FileSystemException e) {
@@ -270,7 +276,6 @@ class Block{
 		for(int b: successArray)
 			if(b!=1)
 				complete = false;
-		//TODO handle failure, i.e., b=-1 
 		
 		//received all confirmations, send info to parent file
 		if(complete)

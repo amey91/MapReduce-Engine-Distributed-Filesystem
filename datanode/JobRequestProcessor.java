@@ -1,13 +1,13 @@
 package datanode;
 
+import jarmanager.JarLoader;
+
 import java.io.IOException;
 import java.net.Socket;
 
 import mapreduce.Mapper;
 import namenode.InitTask;
-import commons.InitKeyValues;
-import commons.JarLoader;
-import commons.LaunchProcess;
+import commons.Logger;
 import communication.Communicator;
 import communication.KeyListMessage;
 import communication.Message;
@@ -25,22 +25,26 @@ public class JobRequestProcessor extends Thread{
 	public void run(){
 		try{
 			Message m = Communicator.receiveMessage(socket);
-			if(m.type.equals("InitJob")){
+			Logger.log("Received Message: " + m.type);
+			if(m.type.equals("InitTask")){
+				
+				// run sample mapper task
+				// calculate total size estimate
+				// return keys
+				
 				TaskMessage tm = (TaskMessage) m;
 				InitTask t = (InitTask) tm.task;
-				String blockName = tm.fileName;
+				String blockLocalPath = DataNode.rootPath + (FileSystem.DIRECTORYSEPARATOR + tm.fileName);
+				
 				
 				String jarFileLocalPath = DataNode.rootPath.toString()+FileSystem.DIRECTORYSEPARATOR + t.getJob().getID() + ".jar";
 				HDFSToLocal.MoveToLocal(jarFileLocalPath, t.getJarFile());
-				Class<Mapper> mapper = (Class<Mapper>) JarLoader.getClassFromJar(jarFileLocalPath, t.getMapperName());
 				
-				Boolean initTask = true;
-				KeyListMessage klm = InitKeyValues.runInitMapper(mapper, blockName, initTask);
+				KeyListMessage klm =  DataNode.getTaskRunnerManager().LaunchInitTask( jarFileLocalPath, t.getMapperName(), blockLocalPath);
 				
 				Communicator.sendMessage(socket, klm);
 				
 				socket.close();
-				
 			}
 			else if(m.type.equals("Mapper")){
 			}

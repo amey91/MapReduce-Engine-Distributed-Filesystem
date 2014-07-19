@@ -47,7 +47,6 @@ public class FileSystem {
 	public void RemoveFile(String pathToFile) throws FileSystemException{
 		synchronized(lock){
 			String pathNodes[] = pathToFile.split( Character.toString(DIRECTORYSEPARATOR));
-
 			getPreviousWorkingDirectory(pathNodes).RemoveFileOrDirectory(pathNodes[pathNodes.length-1]);
 		}
 	}

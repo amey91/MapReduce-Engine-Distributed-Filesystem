@@ -15,6 +15,8 @@ public class Message implements Serializable{
 	
 	public long fileSize;
 	
+	public int portNumber;
+	
 	public Message(String type) {
 		this.type = type;
 	}

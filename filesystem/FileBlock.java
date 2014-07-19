@@ -79,6 +79,8 @@ public class FileBlock implements Serializable{
 			else
 				doneList.add(s);
 		}
+		if(failList.size() == 0)
+			return;
 		try {
 			dataNodeLocations[location] = "";
 			ArrayList<String> alternate = NameNode.instance.getNewLocations(doneList.get(0), doneList, failList);
