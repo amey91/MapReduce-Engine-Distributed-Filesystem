@@ -2,13 +2,11 @@ package namenode;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import commons.Logger;
 import communication.Communicator;
 import communication.KeyListMessage;
-import communication.Message;
 import communication.TaskMessage;
 import conf.Constants;
 import filesystem.DistributedFile;
@@ -29,10 +27,6 @@ public class InitTask extends Task {
 		this.file = f;
 		this.mapperName = mapperName;
 		this.jarFilePath = jarFilePath;
-	}
-	
-	public String getJarFile(){
-		return jarFilePath;
 	}
 	
 	public String getMapperName(){

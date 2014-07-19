@@ -17,7 +17,7 @@ public class JobTracker implements Serializable{
 	DistributedFile inputFile;
 	Directory outputPath;
 	String jobName;
-	DistributedFile jarFile;
+	String jarFilePath;
 	String datanodeKey; 
 	
 	Integer jobId;
@@ -40,6 +40,8 @@ public class JobTracker implements Serializable{
 		for(int i=0; i < numMapperTasks; i++)
 			mapperTaskArray[i] = new MapperTask(this, i, blocks[i]);
 		int[] mapperTaskSuccessArray = new int[numMapperTasks];
+		for(int success: mapperTaskSuccessArray)
+			success = 0;
 	}
 	public JobTracker(Integer jobId, Job job) throws FileSystemException {
 		this.jobId = jobId;
@@ -49,7 +51,7 @@ public class JobTracker implements Serializable{
 		this.reducerClassName = job.reducerClassName;
 		this.inputFile = NameNode.fs.getFile(job.inputPath);
 		this.outputPath = NameNode.fs.getDirectory(job.outputPath);
-		this.jarFile = NameNode.fs.getFile(job.jarFile);
+		this.jarFilePath = job.jarFile;
 		
 
 		initTask = new InitTask(this, inputFile, job.jarFile, mapperClassName);
@@ -82,9 +84,12 @@ public class JobTracker implements Serializable{
 		
 		numMapperTasksComplete = 0;
 		for(int i=0; i < mapperTaskArray.length; i++)
-			mapperTaskArray[i].run();
+			mapperTaskArray[i].execute();
 	}
 	public int getID() {
 		return jobId;
+	}
+	public String getJarFilePath() {
+		return jarFilePath;
 	}
 }

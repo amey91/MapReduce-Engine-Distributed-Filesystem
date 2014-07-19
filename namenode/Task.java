@@ -25,5 +25,9 @@ public abstract class Task implements Serializable{
 	void reportCompletion(Boolean success){
 		parent.report(success, this);
 	}
+	
+	public String getJarFilePath(){
+		return parent.getJarFilePath();
+	}
 
 }

@@ -1,11 +1,9 @@
 package datanode;
 import java.io.*;
-import java.lang.ProcessBuilder.Redirect;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 
-import mapreduce.Mapper;
 import commons.Logger;
 import communication.Communicator;
 import communication.KeyListMessage;
@@ -90,25 +88,25 @@ public class TaskRunnerManager extends Thread {
 		lastHeartBeat = System.currentTimeMillis();
 		isRunning = true;
 		
-		MapperTaskMessage mtm = new MapperTaskMessage("InitTask", jarFileLocalPath, mapperClassName, blockLocalPath, null);
+		MapperTaskMessage mtm = new MapperTaskMessage(jarFileLocalPath, mapperClassName, blockLocalPath);
 		isRunning = false;
 		
 		return (KeyListMessage)Communicator.sendAndReceiveMessage("127.0.0.1", taskRunnerPort, mtm);
 	}
 	
-	public void LaunchMapperTask(String jarFileLocalPath, String mapperClassName, String blockLocalPath, String outputPath ) throws UnknownHostException, InterruptedException, IOException{
+	public void LaunchMapperTask(String jarFileLocalPath, String mapperClassName, 
+			String blockLocalPath, Comparable<?>[] splits, int jobId, int taskId ) throws UnknownHostException, InterruptedException, IOException{
 		
 		if(!isReady)
 			throw new IOException("TaskRunner not ready yet");
 
 		lastHeartBeat = System.currentTimeMillis();
 		isRunning = true;
-		
-		MapperTaskMessage mtm = new MapperTaskMessage("MapperTask", jarFileLocalPath, mapperClassName, blockLocalPath, outputPath);
+		String outputLocalPath = "MAPPER_OUT_" + jobId + "_" + taskId;
+		MapperTaskMessage mtm = new MapperTaskMessage(jarFileLocalPath, mapperClassName, splits, blockLocalPath, outputLocalPath);
 		Communicator.sendMessage("127.0.0.1", taskRunnerPort, mtm);
-		
 	}
-	
+
 	public void HeartbeatFailed(){
 		CreateNewJVM();
 		// TODO update map of tasks

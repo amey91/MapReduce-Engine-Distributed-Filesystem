@@ -8,10 +8,8 @@ import java.io.InputStreamReader;
 import java.lang.ProcessBuilder.Redirect;
 import java.util.Arrays;
 
-import mapreduce.Mapper;
 import commons.Logger;
 import communication.KeyListMessage;
-import filesystem.FileSystem;
 
 public class InitKeyValues {	
 	public static KeyListMessage runInitMapper(String jarFileLocalPath, String mapperClassName,	String blockName) {

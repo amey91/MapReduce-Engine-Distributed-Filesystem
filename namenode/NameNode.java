@@ -267,4 +267,9 @@ public class NameNode extends Thread implements NameNodeInterface {
 		return null;
 	}
 
+	public String findExecuteLocation(String[] nodeLocations) {
+		// TODO  Find smart algo to find execute Location
+		return nodeLocations[0];
+	}
+
 }

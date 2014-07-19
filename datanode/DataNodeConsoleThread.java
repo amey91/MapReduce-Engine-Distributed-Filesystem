@@ -7,11 +7,9 @@ import java.io.InputStreamReader;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
-import testfiles.TestClient;
 import mapreduce.Job;
 import namenode.InvalidDataNodeException;
 import commons.Logger;
-import communication.Communicator;
 import filesystem.FileSystemException;
 
 public class DataNodeConsoleThread extends Thread{

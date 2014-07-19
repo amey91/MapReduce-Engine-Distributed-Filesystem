@@ -8,8 +8,10 @@ import java.net.Socket;
 
 import namenode.InitTask;
 import namenode.InvalidDataNodeException;
+import namenode.MapperTask;
 import commons.Logger;
 import communication.Communicator;
+import communication.HeartbeatMessage;
 import communication.KeyListMessage;
 import communication.Message;
 import communication.TaskMessage;
@@ -112,15 +114,41 @@ public class FileRequestProcessor extends Thread{
 				
 				
 				String jarFileLocalPath = DataNode.rootPath.toString()+FileSystem.DIRECTORYSEPARATOR + t.getJob().getID() + ".jar";
-				HDFSToLocal.MoveToLocal(jarFileLocalPath, t.getJarFile());
+				HDFSToLocal.MoveToLocal(jarFileLocalPath, t.getJarFilePath());
 				
 				TaskRunnerManager trm = DataNode.getTaskRunnerManager();
+				if(trm==null){
+					//tell NameNode to gotohell
+					return;
+				}
 				KeyListMessage klm = trm.LaunchInitTask( jarFileLocalPath, t.getMapperName(), blockLocalPath);
 				
 				Communicator.sendMessage(socket, klm);
 				
 				socket.close();
+			}else if(inMessage.type.equals("MapperTask")){
+				TaskMessage tm = (TaskMessage) inMessage;
+				MapperTask t = (MapperTask) tm.task;
+				String blockLocalPath = DataNode.rootPath + (FileSystem.DIRECTORYSEPARATOR + tm.fileName);
+				
+				
+				String jarFileLocalPath = DataNode.rootPath.toString()+FileSystem.DIRECTORYSEPARATOR + t.getJob().getID() + ".jar";
+				HDFSToLocal.MoveToLocal(jarFileLocalPath, t.getJarFilePath());
+				
+				TaskRunnerManager trm = DataNode.getTaskRunnerManager();
+				if(trm==null){
+					//tell NameNode to gotohell
+					return;
+				}
+				trm.LaunchMapperTask( jarFileLocalPath, t.getMapperName(), blockLocalPath, t.getSplits(), t.getJob().getID(), t.getTaskID());				
+				socket.close();
+				
+			}else if(inMessage.type.equals("Heartbeat")){
+				HeartbeatMessage tm = (HeartbeatMessage) inMessage;
+				//DataNode.nameNode.sendUpdate(tm.jobId, tm.taskId, tm.complete, tm.percent);
 			}
+				
+				
 		} catch (IOException|InterruptedException|ClassNotFoundException e) {
 			//TODO delete
 			Logger.log(e.getMessage());

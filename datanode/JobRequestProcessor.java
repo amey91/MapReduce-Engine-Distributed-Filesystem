@@ -1,18 +1,12 @@
 package datanode;
 
-import jarmanager.JarLoader;
 
 import java.io.IOException;
 import java.net.Socket;
 
-import mapreduce.Mapper;
-import namenode.InitTask;
 import commons.Logger;
 import communication.Communicator;
-import communication.KeyListMessage;
 import communication.Message;
-import communication.TaskMessage;
-import filesystem.FileSystem;
 
 public class JobRequestProcessor extends Thread{
 	Socket socket;

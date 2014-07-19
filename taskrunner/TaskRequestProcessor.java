@@ -24,16 +24,17 @@ public class TaskRequestProcessor extends Thread {
 			switch(inMessage.type){
 			case("InitTask"):
 				MapperTaskMessage mtm = (MapperTaskMessage) inMessage;
-				RunMapper rMapper  = new RunMapper(mtm.jarFileLocalPath, mtm.mapperClassName, mtm.blockLocalPath, 
-						mtm.outputPath, true, TaskRunner.dataNodeListeningPort);
+				RunInit rInit  = new RunInit(mtm.jarFileLocalPath, mtm.mapperClassName, 
+						mtm.blockLocalPath, TaskRunner.dataNodeListeningPort);
 				
-				rMapper.Run(socket);
+				rInit.Run(socket);
 				break;
 
 			case("Mapper"):
 				mtm = (MapperTaskMessage) inMessage;
-				rMapper  = new RunMapper(mtm.jarFileLocalPath, mtm.mapperClassName, mtm.blockLocalPath, 
-						mtm.outputPath, false, TaskRunner.dataNodeListeningPort);
+				RunMapper rMapper  = new RunMapper(mtm.jarFileLocalPath, mtm.mapperClassName, mtm.blockLocalPath, 
+						mtm.outputLocalPath, TaskRunner.dataNodeListeningPort);
+				rMapper.Run();
 				break;
 
 			case("Reducer"):
