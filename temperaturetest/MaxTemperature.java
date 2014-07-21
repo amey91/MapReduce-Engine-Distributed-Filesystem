@@ -4,9 +4,6 @@ package temperaturetest;
 // vv MaxTemperature
 
 
-import mapreduce.Job;
-
-import java.nio.file.Paths;
 
 public class MaxTemperature {
 

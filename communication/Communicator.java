@@ -24,16 +24,15 @@ import commons.Logger;
 public class Communicator {
 	
 	// accept created socket and do not close it after use
-	public static void sendMessage(Socket sendingSocket, Message m) throws InterruptedException, IOException {
+	public static void sendMessage(Socket sendingSocket, Message m) throws IOException {
 		if(sendingSocket == null)
 			throw new IOException("Communicator received invalid socket");
 		ObjectOutputStream os = new ObjectOutputStream(sendingSocket.getOutputStream());
 		os.writeObject(m);
-		Thread.sleep(200);
 	}
 
 	// create the socket, send message and then close the socket
-	public static void sendMessage(String hostName, int port, Message m) throws InterruptedException, UnknownHostException, IOException {
+	public static void sendMessage(String hostName, int port, Message m) throws UnknownHostException, IOException {
 		Socket sendingSocket = new Socket(InetAddress.getByName(hostName),port);
 		sendMessage(sendingSocket, m);
 		//close sending socket
@@ -41,7 +40,7 @@ public class Communicator {
 	}
 	
 	// take socket, receive message and do not close socket
-	public static Message receiveMessage(Socket receivingSocket) throws InterruptedException, IOException, ClassNotFoundException {
+	public static Message receiveMessage(Socket receivingSocket) throws IOException, ClassNotFoundException {
 		ObjectInputStream is = new ObjectInputStream(receivingSocket.getInputStream());
 		Object newObj = (Object)is.readObject();
 		
@@ -52,7 +51,7 @@ public class Communicator {
 	}
 
 	// create socket, accept message and close the socket
-	public static Message sendAndReceiveMessage(String hostName, int port, Message inputMessage) throws InterruptedException, UnknownHostException, IOException, ClassNotFoundException {
+	public static Message sendAndReceiveMessage(String hostName, int port, Message inputMessage) throws UnknownHostException, IOException, ClassNotFoundException {
 		Socket socket = new Socket(hostName,port);
 		Communicator.sendMessage(socket, inputMessage);
 		Message newObj = (Message)Communicator.receiveMessage(socket);
@@ -61,7 +60,7 @@ public class Communicator {
 	}
 	
 	// create socket, accept message and close the socket
-	public static Message sendAndReceiveMessage(Socket socket, Message inputMessage) throws InterruptedException, UnknownHostException, IOException, ClassNotFoundException {
+	public static Message sendAndReceiveMessage(Socket socket, Message inputMessage) throws UnknownHostException, IOException, ClassNotFoundException {
 		Communicator.sendMessage(socket, inputMessage);
 		Message newObj = (Message)Communicator.receiveMessage(socket);
 		socket.close();

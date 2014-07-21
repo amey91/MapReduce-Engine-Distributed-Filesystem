@@ -3,9 +3,11 @@ package namenode;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import commons.Logger;
-import filesystem.FileSystemException;
 import mapreduce.Job;
+
+import commons.Logger;
+
+import filesystem.FileSystemException;
 
 public class JobTrackerThread extends Thread {
 	public Integer uniqueJobIdentifier;

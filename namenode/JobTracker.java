@@ -1,14 +1,18 @@
 package namenode;
 
-import filesystem.Directory;
-import filesystem.DistributedFile;
-import filesystem.FileBlock;
-import filesystem.FileSystemException;
-import mapreduce.Job;
-
+import java.io.IOException;
 import java.io.Serializable;
+import java.net.Socket;
 
+import mapreduce.Job;
 import commons.Logger;
+import communication.Communicator;
+import communication.MergeAndUploadMessage;
+import communication.Message;
+import filesystem.Directory;
+import filesystem.FileBlock;
+import filesystem.FileSystem;
+import filesystem.FileSystemException;
 
 
 // track the jobs on datanodes
@@ -19,7 +23,7 @@ public class JobTracker implements Serializable{
 	String mapperClassName;
 	String reducerClassName;
 	String inputPath;
-	Directory outputPath;
+	String outputPath;
 	String jobName;
 	String jarFilePath;
 	String datanodeKey; 
@@ -39,6 +43,8 @@ public class JobTracker implements Serializable{
 	
 	Boolean mapperPhaseComplete = false;
 	int numberOfMappers;
+	
+	String[] reducerClients;
 	
 	private void splitMapperTasksJobs() throws FileSystemException{
 		FileBlock[] blocks = NameNode.fs.getFileBlocks(inputPath); 
@@ -63,7 +69,7 @@ public class JobTracker implements Serializable{
 		this.mapperClassName = job.mapperClassName;
 		this.reducerClassName = job.reducerClassName;
 		this.inputPath = job.inputPath;
-		this.outputPath = NameNode.fs.getDirectory(job.outputPath);
+		this.outputPath = job.outputPath;
 		this.jarFilePath = job.jarFile;
 		
 
@@ -84,7 +90,7 @@ public class JobTracker implements Serializable{
 		int numberOfReducers = splits.length + 1;
 
 		reducerTaskArray = new ReducerTask[numberOfReducers];
-		
+		reducerClients = new String[numberOfReducers];
 		for(int i=0; i < numberOfReducers; i++){
 			if(i==0)
 				reducerTaskArray[i] = new ReducerTask(this, i, null, splits[i], numberOfMappers);
@@ -102,8 +108,18 @@ public class JobTracker implements Serializable{
 		}
 		
 		numMapperTasksComplete = 0;
-		for(int i=0; i < mapperTaskArray.length; i++)
-			mapperTaskArray[i].execute();
+		for(int i=0; i < mapperTaskArray.length; i++){
+			try {
+				mapperTaskArray[i].execute();
+			} catch (InvalidDataNodeException e) {
+				e.printStackTrace();
+				handleFailure();
+			}
+		}
+	}
+	private void handleFailure() {
+		// TODO Auto-generated method stub
+		
 	}
 	public int getID() {
 		return jobId;
@@ -136,8 +152,14 @@ public class JobTracker implements Serializable{
 				
 				for(ReducerTask reducer: reducerTaskArray){
 					reducer.addProvider(taskId, clientKey);
-					if(mapperPhaseComplete)
-						reducer.execute();
+					if(mapperPhaseComplete){
+						try {
+							reducer.execute();
+						} catch (InvalidDataNodeException e) {
+							e.printStackTrace();
+							handleFailure();
+						}
+					}
 				}
 			}
 		}
@@ -145,14 +167,26 @@ public class JobTracker implements Serializable{
 			reducerTaskCompletion[taskId] = percentComplete;
 			if(complete){
 				mapperTaskSuccessArray[taskId] = true;
-			
+				reducerClients[taskId] = clientKey;
 				Boolean isComplete = true;
 				for(Boolean b: mapperTaskSuccessArray)
 					if(!b)
 						isComplete = false;
 				
 				if(isComplete){
-					//remove from jobTracker
+					MergeAndUploadMessage m = new MergeAndUploadMessage(jobId, reducerClients, 
+							outputPath + FileSystem.DIRECTORYSEPARATOR + "out");
+					
+					
+					try {
+						Socket sendingSocket = Communicator.CreateTaskSocket(reducerClients[0]);
+						Communicator.sendMessage(sendingSocket, m);
+						sendingSocket.close();
+						//TODO tell all nodes to clean the job files
+					} catch (IOException e) {
+						e.printStackTrace();
+						handleFailure();
+					}
 				}
 			}
 		}

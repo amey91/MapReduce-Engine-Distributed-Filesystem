@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import mapreduce.Mapper;
 import commons.Logger;
 import communication.Communicator;
 import communication.HeartbeatMessage;

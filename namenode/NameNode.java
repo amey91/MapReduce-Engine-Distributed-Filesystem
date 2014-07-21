@@ -1,15 +1,17 @@
 package namenode;
 
 import java.rmi.RemoteException;
-import java.rmi.registry.Registry;
 import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 
 import mapreduce.Job;
+
 import commons.Logger;
+
 import conf.Constants;
 import filesystem.DistributedFile;
 import filesystem.FileBlock;

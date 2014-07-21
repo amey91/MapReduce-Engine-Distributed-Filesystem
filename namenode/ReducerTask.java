@@ -24,7 +24,7 @@ public class ReducerTask extends Task implements Serializable{
 		return clients;
 	}
 
-	void execute() {
+	void execute() throws InvalidDataNodeException {
 		try {
 			
 			String slaveKey = NameNode.instance.findExecuteLocation(clients);
@@ -33,7 +33,7 @@ public class ReducerTask extends Task implements Serializable{
 			TaskMessage m = new TaskMessage("ReducerTask", this);
 
 			Communicator.sendMessage(socket, m);
-		} catch (IOException | InterruptedException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}

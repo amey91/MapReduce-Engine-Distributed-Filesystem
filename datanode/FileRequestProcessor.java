@@ -10,10 +10,12 @@ import namenode.InitTask;
 import namenode.InvalidDataNodeException;
 import namenode.MapperTask;
 import namenode.ReducerTask;
+import commons.FileMerge;
 import commons.Logger;
 import communication.Communicator;
 import communication.HeartbeatMessage;
 import communication.KeyListMessage;
+import communication.MergeAndUploadMessage;
 import communication.Message;
 import communication.TaskMessage;
 import filesystem.FileSystem;
@@ -60,6 +62,10 @@ public class FileRequestProcessor extends Thread{
 			else if(inMessage.type.equals("sendMeFile")){
 				String blockName = inMessage.fileName;
 				File sendFile = new File(DataNode.rootPath + (FileSystem.DIRECTORYSEPARATOR + blockName));
+
+				inMessage.fileSize = sendFile.length();
+				Communicator.sendMessage(socket, inMessage);
+				
 				BufferedInputStream bis = new BufferedInputStream(
 						new FileInputStream(DataNode.rootPath + (FileSystem.DIRECTORYSEPARATOR + blockName)));
 				
@@ -92,7 +98,7 @@ public class FileRequestProcessor extends Thread{
 					outSocket.close();
 					socket.close();
 					
-				}catch(IOException | InterruptedException e){
+				}catch(IOException e){
 					try {
 						
 						Logger.log(e.getMessage());
@@ -102,7 +108,7 @@ public class FileRequestProcessor extends Thread{
 						Communicator.sendMessage(socket, confirmation);
 						socket.close();
 						
-					} catch (InterruptedException | IOException e1) {
+					} catch (IOException e1) {
 						Logger.log("Oh well!");
 						e1.printStackTrace();
 					}
@@ -121,7 +127,7 @@ public class FileRequestProcessor extends Thread{
 				String jarFileLocalPath = DataNode.rootPath.toString()+FileSystem.DIRECTORYSEPARATOR + t.getJob().getID() + ".jar";
 				HDFSToLocal.MoveToLocal(jarFileLocalPath, t.getJarFilePath());
 				
-				TaskRunnerManager trm = DataNode.getTaskRunnerManager(true);
+				TaskRunnerManager trm = DataNode.taskTrackerThread.getTaskRunnerManager(true);
 				if(trm==null){
 					//tell NameNode to gotohell
 					return;
@@ -140,7 +146,7 @@ public class FileRequestProcessor extends Thread{
 				String jarFileLocalPath = DataNode.rootPath.toString()+FileSystem.DIRECTORYSEPARATOR + t.getJob().getID() + ".jar";
 				HDFSToLocal.MoveToLocal(jarFileLocalPath, t.getJarFilePath());
 				
-				TaskRunnerManager trm = DataNode.getTaskRunnerManager(false);
+				TaskRunnerManager trm = DataNode.taskTrackerThread.getTaskRunnerManager(false);
 				if(trm==null){
 					//tell NameNode to gotohell
 					return;
@@ -159,15 +165,50 @@ public class FileRequestProcessor extends Thread{
 				String jarFileLocalPath = DataNode.rootPath.toString()+FileSystem.DIRECTORYSEPARATOR + t.getJob().getID() + ".jar";
 				HDFSToLocal.MoveToLocal(jarFileLocalPath, t.getJarFilePath());
 				
-				TaskRunnerManager trm = DataNode.getTaskRunnerManager(false);
+				TaskRunnerManager trm = DataNode.taskTrackerThread.getTaskRunnerManager(false);
 				if(trm==null){
 					//tell NameNode to gotohell
 					return;
 				}
 				String[] localPaths = new String[t.getClients().length];
+				int iter = 0;
+				for(String clientKey: t.getClients()){
+					Message m = new Message("sendMeFile");
+					m.fileName = "MAPPER_OUT_" + t.getJob().getID() + "_" + iter + "_" + t.getTaskID();
+					
+					
+					localPaths[iter] = m.fileName + "_";
+					Socket socket = Communicator.CreateTaskSocket(clientKey);
+					Message fileSizeMessage = Communicator.sendAndReceiveMessage(socket, m);
+					Communicator.receiveFile(socket, localPaths[iter], fileSizeMessage.fileSize);
+									
+					iter++;
+				}
 				//fill in the files
 				trm.LaunchReducerTask( jarFileLocalPath, t.getReducerName(), localPaths, t.getJob().getID(), t.getTaskID());				
 				socket.close();
+			} else if(inMessage.type.equals("MergeAndUpload")){
+				
+				MergeAndUploadMessage message = (MergeAndUploadMessage)inMessage;
+				
+				int iter = 0;
+				String[] splitPaths = new String[message.clients.length];
+				for(String clientKey: message.clients){
+					Message m = new Message("sendMeFile");
+					m.fileName = "REDUCER_OUT_" + message.jobId + "_" + iter;
+					
+					splitPaths[iter] = DataNode.rootPath + (FileSystem.DIRECTORYSEPARATOR + "SPLIT_" + message.jobId + "_" + iter);
+					
+					Socket socket = Communicator.CreateDataSocket(clientKey);
+					Message fileSizeMessage = Communicator.sendAndReceiveMessage(socket, m);
+					Communicator.receiveFile(socket, splitPaths[iter], fileSizeMessage.fileSize);
+					iter++;
+				}
+				String finalOutputLocalPath = DataNode.rootPath + (FileSystem.DIRECTORYSEPARATOR + "FINAL_" + message.jobId);
+				FileMerge.mergeFiles(splitPaths, finalOutputLocalPath);
+				
+
+     			new Thread(new HDFSToLocal(finalOutputLocalPath, message.HDFSFilePath)).start();
 			}
 				
 				

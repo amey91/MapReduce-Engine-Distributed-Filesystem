@@ -38,7 +38,7 @@ public class TaskRunnerListeningThread extends Thread {
 				taskRunnerManager.sendUpdate( hbm.percent,hbm.complete);
 				
 			}
-		} catch (ClassNotFoundException | InterruptedException | IOException e) {
+		} catch (ClassNotFoundException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

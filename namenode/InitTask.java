@@ -8,8 +8,8 @@ import commons.Logger;
 import communication.Communicator;
 import communication.KeyListMessage;
 import communication.TaskMessage;
+
 import conf.Constants;
-import filesystem.DistributedFile;
 import filesystem.FileBlock;
 import filesystem.FileSystemException;
 
@@ -60,7 +60,7 @@ public class InitTask extends Task {
 				
 				//for(Comparable<?> c:arr[iter])
 					//Logger.log((String)c);
-			} catch (IOException | InterruptedException | ClassNotFoundException e) {
+			} catch (IOException | ClassNotFoundException e) {
 				e.printStackTrace();
 			}
 			iter++;

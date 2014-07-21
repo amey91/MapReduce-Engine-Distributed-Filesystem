@@ -1,13 +1,13 @@
 package namenode;
 
-import filesystem.FileBlock;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.Socket;
 
 import communication.Communicator;
 import communication.TaskMessage;
+
+import filesystem.FileBlock;
 
 // one type of task. See Task.java
 public class MapperTask extends Task implements Serializable{
@@ -31,7 +31,7 @@ public class MapperTask extends Task implements Serializable{
 		return splits;
 	}
 
-	void execute() {
+	void execute() throws InvalidDataNodeException {
 		
 		try {
 			
@@ -45,7 +45,7 @@ public class MapperTask extends Task implements Serializable{
 			Communicator.sendMessage(socket, m);			
 			//for(Comparable<?> c:arr[iter])
 				//Logger.log((String)c);
-		} catch (IOException | InterruptedException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		

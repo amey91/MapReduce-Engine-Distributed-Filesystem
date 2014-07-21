@@ -40,7 +40,7 @@ public class DeleteFileThread extends Thread{
 						// send delete message for the file
 						Communicator.sendMessage(ipPort[0], Integer.parseInt(ipPort[1]), inputMessage);
 						
-					} catch (NumberFormatException | InterruptedException | IOException e) {
+					} catch (NumberFormatException | IOException e) {
 						e.printStackTrace();
 						throw new IOException("Could not delete distributed file block " + blockName +"\n "+e.getMessage());
 					}	

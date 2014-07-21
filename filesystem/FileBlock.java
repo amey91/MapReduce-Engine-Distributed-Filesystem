@@ -8,9 +8,11 @@ import java.util.ArrayList;
 
 import namenode.InvalidDataNodeException;
 import namenode.NameNode;
+
 import commons.Logger;
 import communication.Communicator;
 import communication.Message;
+
 import conf.Constants;
 
 
@@ -100,7 +102,7 @@ public class FileBlock implements Serializable{
 				if(result.type.equals("fail"))
 					throw new FileSystemException("Fixing the block fail");
 					
-			} catch (InterruptedException | IOException | ClassNotFoundException e) {
+			} catch (IOException | ClassNotFoundException e) {
 				throw new FileSystemException("Fixing the block failed2");
 			} 
 		} catch (RemoteException | InvalidDataNodeException e) {

@@ -1,7 +1,5 @@
 package datanode;
 
-import commons.Logger;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -17,6 +15,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 import namenode.NameNodeInterface;
+import commons.Logger;
 import communication.Communicator;
 import communication.Message;
 
@@ -36,7 +35,6 @@ public class DataNode {
 	static Object freeSpaceLock = new Object();
 	public static long sizeOfStoredFiles = 0;
 	static Object sizeOfFileLock = new Object();
-	static TaskRunnerManager[] taskRunnerManagers;
 
 	static FileCopyThread fcThread;
 	static DataNodeConsoleThread consoleThread;
@@ -44,7 +42,7 @@ public class DataNode {
 	static FileSizeThread fsThread;
 	static TaskTracker taskTrackerThread;
 
-	static int numOfMappers = 6;
+	static int numOfRunners;
 
 	public static void main(String args[]) {
 				
@@ -80,37 +78,36 @@ public class DataNode {
 		}
 
 		rootPath = Paths.get(args[0]);
+		
+		// intialize mapper/reducer processing environments
+		taskTrackerThread = new TaskTracker();
+		numOfRunners = getNumberOfMappers();
+		taskTrackerThread.initializeTaskRunnerManagerInterface(numOfRunners);
+		
+		Logger.log("NUM OF TaskRunners  = " + numOfRunners);
+		for(int i =0; i< numOfRunners;i++){
+			try {
+				TaskRunnerManager taskRunnerManager = new TaskRunnerManager(rootPath.toString());
+				taskTrackerThread.register(i,taskRunnerManager);
+				taskRunnerManager.start();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		taskTrackerThread.start();
+
+		
 		consoleThread = new DataNodeConsoleThread();
 		consoleThread.start();
 		hbThread = new HeartbeatThread();
 		hbThread.start();
-		taskTrackerThread = new TaskTracker();
-		taskTrackerThread.start();
 		fsThread = new FileSizeThread();
 		fsThread.start();
 		fcThread = new FileCopyThread();
 		fcThread.start();
 		
-		// intialize mapper/reducer processing environments
-
-		numOfMappers = getNumberOfMappers();
-		taskRunnerManagers = new TaskRunnerManager[numOfMappers];
-		taskTrackerThread.initializeTaskRunnerManagerInterface(numOfMappers);
-		Logger.log("NUM OF MAPPERS  = " + numOfMappers);
-		for(int i =0; i< taskRunnerManagers.length;i++){
-			try {
-				taskRunnerManagers[i] = new TaskRunnerManager(rootPath.toString());
-				taskRunnerManagers[i].start();
-				taskTrackerThread.register(i,taskRunnerManagers[i]);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		Communicator.listenForMessages(fileSocket, null, FileRequestProcessor.class);
-
-				
-		//TODO
-		// Communicator.listenForMessages(jobSocket, null, JobRequestProcessor.class);
+		
+		Communicator.listenForMessages(fileSocket, null, FileRequestProcessor.class);				
 	}
 
 	private static int getNumberOfMappers() {
@@ -232,32 +229,13 @@ public class DataNode {
 			Logger.log("Couldn't re register myself");
 			System.exit(0);
 		}
-	}
-
-	public TaskRunnerManager getTaskRunnerManager(Boolean isInitTask) {
-		for(int i =0; i< taskRunnerManagers.length;i++){
-			Logger.log("trm"+i);
-			if(taskRunnerManagers[i]==null)
-				Logger.log("taskmanager " + i + "is null!!");
-			if(taskRunnerManagers[i].isReady() && (isInitTask||!taskRunnerManagers[i].isRunning()) )
-				return taskRunnerManagers[i];
-			else {
-				Logger.log("Inside gettaskrunner at datanodemain: "+ taskRunnerManagers[i].isReady() +" "+ !taskRunnerManagers[i].isRunning() + "");
-			}
-		}
-		//TODO none ready -> put in queue?
-		Logger.log("No Task Runner Ready");
-		return null;
-		
 	}	
+
 	
-	public static void destroyJVMs(){
+	public static void destroy(){
 		// cleanup launched JVMs before exit
-		for(TaskRunnerManager t : taskRunnerManagers){
-			t.destroyJVM();
-			Logger.log("Stopping operations on this datanode...");
-			System.exit(0);
-		}
+		taskTrackerThread.destroyJVMs();
+		System.exit(0);
 		
 	}
 }

@@ -3,21 +3,21 @@ package temperaturetest;
 // vv MaxTemperatureReducer
 import java.io.IOException;
 
-import mapreduce.Reducer;
 import mapreduce.Context;
+import mapreduce.Reducer;
 
 public class Reducer1
   implements Reducer<String, Integer, String, Integer> {
   
   @Override
-  public void reduce(String key, Iterable<Integer> values, Context context)
+  public void reduce(String key, Iterable<Integer> values, Context<String, Integer> context)
       throws IOException, InterruptedException {
     
-    int maxValue = Integer.MIN_VALUE;
+    int total = 0;
     for (Integer value : values) {
-      maxValue = Math.max(maxValue, value);
+      total += value;
     }
-    context.write(key, new Integer(maxValue));
+    context.write(key, new Integer(total));
   }
 }
 // ^^ MaxTemperatureReducer

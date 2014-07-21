@@ -1,5 +1,7 @@
 package taskrunner;
 
+import jarmanager.JarLoader;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -7,16 +9,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import commons.Logger;
-import jarmanager.JarLoader;
 import mapreduce.Context;
 import mapreduce.Mapper;
 
+import commons.Logger;
+
 
 // run a mapper task for the specified file block
-public class RunMapper {
+public class RunMapper<Key extends Comparable<Key>, Value> {
 	
-	Class<Mapper> mapperClass;
+	Class<Mapper<Key, Value> > mapperClass;
 	Boolean isInitTask;
 	String blockLocalPath;
 	String outputLocalPath;
@@ -26,7 +28,7 @@ public class RunMapper {
 	public RunMapper(String jarFileLocalPath, String mapperClassName, String blockLocalPath, 
 			String outputLocalPath, int dataNodeListeningPort) throws Exception{
 		this.percent = 0;
-		this.mapperClass = (Class<Mapper>) JarLoader.getClassFromJar(jarFileLocalPath, mapperClassName);
+		this.mapperClass = (Class<Mapper<Key, Value> >) JarLoader.getClassFromJar(jarFileLocalPath, mapperClassName);
 		this.blockLocalPath = blockLocalPath;
 		this.outputLocalPath = outputLocalPath;
 		this.heartBeatThread = new Thread(new TaskRunnerHeartBeatThread(this,dataNodeListeningPort));
@@ -35,7 +37,7 @@ public class RunMapper {
 	public void Run(){
 		
 		try {
-			Mapper m = mapperClass.newInstance();			
+			Mapper<Key, Value> m = mapperClass.newInstance();			
 
 			File file = new File(blockLocalPath, "r");
 			long fileLength = file.length();
@@ -46,14 +48,14 @@ public class RunMapper {
 			// start HB thread after file is initialized
 			this.heartBeatThread.start();
 			
-			Context context = new Context(outputLocalPath);
+			Context<Key, Value> context = new Context<Key, Value>(outputLocalPath);
 			
 			String line;
 			int lineNumber = 0;			
 			
 			long totalRead = 0;
 			while ((line = br.readLine()) != null) {
-			    m.map(lineNumber, line, context);
+			    m.map((long)lineNumber, line, context);
 			    lineNumber++;
 			    totalRead += line.length();
 				this.percent = (totalRead*1.0)/fileLength;

@@ -1,6 +1,5 @@
 package communication;
 
-import communication.Message;
 
 // type of message
 public class HeartbeatMessage extends Message {

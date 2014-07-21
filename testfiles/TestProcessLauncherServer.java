@@ -1,10 +1,11 @@
 package testfiles;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.ProcessBuilder.Redirect;
 import java.util.Arrays;
-
-import mapreduce.Mapper;
-import communication.KeyListMessage;
 
 /*  @referred: http://www.xyzws.com/Javafaq/how-to-run-external-programs-by-using-java-processbuilder-class/189
  *  Launches a separate JVM with the specified path

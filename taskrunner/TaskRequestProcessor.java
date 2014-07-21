@@ -26,7 +26,7 @@ public class TaskRequestProcessor extends Thread {
 			case("InitTask"):
 				MapperTaskMessage mtm = (MapperTaskMessage) inMessage;
 				RunInit rInit  = new RunInit(mtm.jarFileLocalPath, mtm.mapperClassName, 
-						mtm.blockLocalPath, TaskRunner.dataNodeListeningPort);
+						mtm.blockLocalPath);
 				
 				rInit.Run(socket);
 				break;

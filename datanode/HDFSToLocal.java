@@ -70,14 +70,16 @@ public class HDFSToLocal extends Thread {
 						m.sendLocation = null;
 						
 						Socket socket = Communicator.CreateDataSocket(location);
-						Communicator.sendMessage(socket, m);
-						if(Communicator.receiveFile(socket, tempFileName, block.getSize())!= block.getSize())
+						Logger.log("sending message");
+						Message fileSizeMessage = Communicator.sendAndReceiveMessage(socket, m);
+						Logger.log("received message:" + fileSizeMessage.fileSize + ":" + block.getSize());
+						if(Communicator.receiveFile(socket, tempFileName, fileSizeMessage.fileSize)!= fileSizeMessage.fileSize)
 							throw new IOException("Received file size not expected");
 						socket.close();
 						success = true;
 						break;
 					}
-					catch(IOException | InterruptedException e) {
+					catch(IOException | ClassNotFoundException e) {
 						Logger.log("one node failed! trying another: " + e.getMessage());
 						// TODO delete
 						e.printStackTrace();

@@ -11,10 +11,12 @@ import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import namenode.InvalidDataNodeException;
+
 import commons.AddressToIPPort;
 import commons.Logger;
 import communication.Communicator;
 import communication.Message;
+
 import conf.Constants;
 import filesystem.FileBlock;
 import filesystem.FileSystemException;
@@ -145,7 +147,7 @@ public class FileCopyThread extends Thread{
 			long actualSendSize = Communicator.sendStream(socket, bis, e.parent.size);
 			bis.close();
 			return actualSendSize == e.parent.size;
-		}catch(IOException | InterruptedException ex){
+		}catch(IOException ex){
 			Logger.log("Exception occured while sending file");
 			//TODO delete
 			ex.printStackTrace();

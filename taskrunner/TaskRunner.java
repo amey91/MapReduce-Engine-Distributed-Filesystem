@@ -1,13 +1,9 @@
 package taskrunner;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.ServerSocket;
-import java.net.UnknownHostException;
-import java.util.Scanner;
 
 import commons.Logger;
 import communication.Communicator;
@@ -42,7 +38,7 @@ public class TaskRunner {
 
 			Logger.log("here");
 			Communicator.listenForMessages(listeningSocket, null, TaskRequestProcessor.class);
-		} catch (InterruptedException|IOException e) {
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			System.exit(-1);

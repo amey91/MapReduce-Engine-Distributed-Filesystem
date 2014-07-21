@@ -3,19 +3,25 @@ package temperaturetest;
 // vv MaxTemperatureMapper
 import java.io.IOException;
 
-import mapreduce.Mapper;
 import mapreduce.Context;
+import mapreduce.Mapper;
 
 public class Mapper1
-  implements Mapper<Integer, String, String, Integer> {
+  implements Mapper<String, Integer> {
 
-  private static final int MISSING = 9999;
+  /**
+	 * 
+	 */
+	private static final long serialVersionUID = -3928875545753337838L;
+
   
   @Override
-  public void map(Integer key, String value, Context context)
+  public void map(Long key, String value, Context<String, Integer> context)
       throws IOException, InterruptedException {
     
-	  context.write(value, 1);
+	  String[] split = value.split(" ");
+	  for(String s: split)
+		  context.write(s, 1);
   }
 }
 // ^^ MaxTemperatureMapper

@@ -3,16 +3,16 @@ package temperaturetest;
 // vv MaxTemperatureMapper
 import java.io.IOException;
 
-import mapreduce.Mapper;
 import mapreduce.Context;
+import mapreduce.Mapper;
 
 public class MaxTemperatureMapper
-  implements Mapper<Integer, String, String, Integer> {
+  implements Mapper<String, Integer> {
 
   private static final int MISSING = 9999;
   
   @Override
-  public void map(Integer key, String value, Context context)
+  public void map(Long key, String value, Context<String, Integer> context)
       throws IOException, InterruptedException {
     
 	  

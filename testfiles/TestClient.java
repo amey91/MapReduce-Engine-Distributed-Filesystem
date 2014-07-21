@@ -4,23 +4,17 @@ package testfiles;
 import jarmanager.JarClassLoader;
 import jarmanager.JarLoader;
 
-import java.awt.List;
-import java.io.BufferedOutputStream;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Type;
-import java.net.Socket;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import commons.Logger;
 import mapreduce.Context;
 import mapreduce.Mapper;
-import filesystem.Directory;
+
+import commons.Logger;
 
 // This class is used to load a class
 public class TestClient {
@@ -79,8 +73,8 @@ public class TestClient {
 
 			Type[] t = c.getGenericInterfaces();
 
-			Mapper<Integer, String, String, Integer> mp = (Mapper<Integer, String, String, Integer>)c.newInstance();
-			mp.map(3, "huj", new Context());
+			Mapper<String, Integer> mp = (Mapper<String, Integer>)c.newInstance();
+			mp.map((long) 3, "huj", new Context());
 
 		}
 		catch(Exception e){
@@ -118,8 +112,8 @@ public class TestClient {
 		Class<?> c = jcl.loadClass("temperaturetest.MaxTemperatureMapper123");//classNames.get(0));
 		Type[] t = c.getGenericInterfaces();
 
-		Mapper<Integer, String, String, Integer> mp = (Mapper<Integer, String, String, Integer>)c.newInstance();
-		mp.map(3, "huj", new Context());
+		Mapper<String, Integer> mp = (Mapper<String, Integer>)c.newInstance();
+		mp.map((long) 3, "huj", new Context<String, Integer>());
 		return c;
 	}
 }

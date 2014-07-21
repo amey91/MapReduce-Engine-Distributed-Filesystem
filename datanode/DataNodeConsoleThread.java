@@ -9,7 +9,9 @@ import java.util.ArrayList;
 
 import mapreduce.Job;
 import namenode.InvalidDataNodeException;
+
 import commons.Logger;
+
 import filesystem.FileSystemException;
 
 // thread for managing user i/p on datanodes
@@ -120,8 +122,8 @@ public class DataNodeConsoleThread extends Thread{
         		// TODO delete xs
          		case("x"):
          		case("X"):
-         		case("destroy_JVMs"):
-         				DataNode.destroyJVMs();
+         		case("destroy"):
+         				DataNode.destroy();
          			break;
          		case("help"):
          			log(	  "\n=================================================================="
@@ -136,7 +138,7 @@ public class DataNodeConsoleThread extends Thread{
     						+ "\n monitor"
     						+ "\n key"
     						+ "\n stophb "
-    						+ "\n destroy_JVMs ");
+    						+ "\n destroy ");
          			break;
          		default:
          			throw new IOException("Wrong input! Enter <help> for info");

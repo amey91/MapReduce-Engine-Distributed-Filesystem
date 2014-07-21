@@ -12,38 +12,31 @@ import commons.Logger;
 import communication.Communicator;
 import communication.KeyListMessage;
 
-public class RunInit {
-	@SuppressWarnings("rawtypes")
-	Class<Mapper> mapperClass;
+public class RunInit<Key extends Comparable<Key>, Value> {
+	Class<Mapper<Key, Value>> mapperClass;
 	Boolean isInitTask;
 	String blockLocalPath;
-	int dataNodeListeningPort;
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public RunInit(String jarFileLocalPath, String mapperClassName, String blockLocalPath, int dataNodeListeningPort){
+	public RunInit(String jarFileLocalPath, String mapperClassName, String blockLocalPath){
 		try{
-			this.mapperClass = (Class<Mapper>) JarLoader.getClassFromJar(jarFileLocalPath, mapperClassName);
+			this.mapperClass = (Class<Mapper<Key, Value> >) JarLoader.getClassFromJar(jarFileLocalPath, mapperClassName);
 		} catch (Exception e) {
 			Logger.log("Eror while loading Jar file:");
 			e.printStackTrace();
 		}
 		this.blockLocalPath = blockLocalPath;
-		this.dataNodeListeningPort = dataNodeListeningPort;
 	}
 
 
 	public void Run(Socket incomingSocket){
 
 		try {
-			Mapper m = mapperClass.newInstance();
-			Logger.log("dataNodeListeningPort = " + dataNodeListeningPort);
-
-			Socket heartBeatSocket = new Socket("127.0.0.1", dataNodeListeningPort);
+			Mapper<Key, Value> m = mapperClass.newInstance();
 
 			RandomAccessFile file = new RandomAccessFile(blockLocalPath, "r");
 			long fileLength = file.length();
 
-			Context context = new Context();
+			Context<Key, Value> context = new Context<Key, Value>();
 			long readRequired = (long)(12*Math.log((double)fileLength)/Math.log(2.0));
 
 			long totalRead = 0;
@@ -56,7 +49,7 @@ public class RunInit {
 				String s = file.readLine();
 
 				Logger.log(s);
-				m.map(0, s, context);
+				m.map((long)0, s, context);
 				totalRead += s.length();
 			}
 			long estimate = (context.getMapperOutputSize()*fileLength)/readRequired;
