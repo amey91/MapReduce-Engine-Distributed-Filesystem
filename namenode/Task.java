@@ -22,10 +22,6 @@ public abstract class Task implements Serializable{
 	public JobTracker getJob(){
 		return parent;
 	}
-	void reportCompletion(Boolean success){
-		parent.report(success, this);
-	}
-	
 	public String getJarFilePath(){
 		return parent.getJarFilePath();
 	}

@@ -15,6 +15,8 @@ public class DataNodeInfo implements Comparable<DataNodeInfo>{
 	private long sizeOfStoredFiles;
 	private long lastSeen;
 	private long freeSpace;
+	private int freeProcesses;
+	private int totalProcesses;
 	private ArrayList<String> fileProxyList;
 	// these file blocks will temporarily store the unconfirmed blocks for each file
 	public ArrayList<FileBlock> tempFileBlocks;
@@ -125,6 +127,22 @@ public class DataNodeInfo implements Comparable<DataNodeInfo>{
 			Logger.log(e.getMessage());
 			e.printStackTrace();
 		}
+	}
+
+	public int getFreeProcesses() {
+		return freeProcesses;
+	}
+
+	public void setFreeProcesses(int freeProcesses) {
+		this.freeProcesses = freeProcesses;
+	}
+
+	public int getTotalProcesses() {
+		return totalProcesses;
+	}
+
+	public void setTotalProcesses(int totalProcesses) {
+		this.totalProcesses = totalProcesses;
 	}
 	
 }

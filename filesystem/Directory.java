@@ -50,16 +50,14 @@ public class Directory implements Serializable{
 	
 	public Directory getSubDirectory(String[] pathNodes) throws FileSystemException{
 		
-		for(String s:pathNodes)
-			Logger.log("getsub: " + s);
+		//for(String s:pathNodes)
+		//	Logger.log("getsub: " + s);
 		int pos = 0;
 		while( pos<pathNodes.length && pathNodes[pos].trim().equals(""))
 			pos++;
 		
 		if(pos == pathNodes.length)
 			return this;
-		
-		Logger.log("gh: " + pos);
 		
 		for(Directory d: childDirectories)
 			if(d.getName().equals(pathNodes[pos]))

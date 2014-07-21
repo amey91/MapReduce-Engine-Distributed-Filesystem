@@ -9,6 +9,7 @@ import java.net.Socket;
 import namenode.InitTask;
 import namenode.InvalidDataNodeException;
 import namenode.MapperTask;
+import namenode.ReducerTask;
 import commons.Logger;
 import communication.Communicator;
 import communication.HeartbeatMessage;
@@ -120,7 +121,7 @@ public class FileRequestProcessor extends Thread{
 				String jarFileLocalPath = DataNode.rootPath.toString()+FileSystem.DIRECTORYSEPARATOR + t.getJob().getID() + ".jar";
 				HDFSToLocal.MoveToLocal(jarFileLocalPath, t.getJarFilePath());
 				
-				TaskRunnerManager trm = DataNode.getTaskRunnerManager();
+				TaskRunnerManager trm = DataNode.getTaskRunnerManager(true);
 				if(trm==null){
 					//tell NameNode to gotohell
 					return;
@@ -139,7 +140,7 @@ public class FileRequestProcessor extends Thread{
 				String jarFileLocalPath = DataNode.rootPath.toString()+FileSystem.DIRECTORYSEPARATOR + t.getJob().getID() + ".jar";
 				HDFSToLocal.MoveToLocal(jarFileLocalPath, t.getJarFilePath());
 				
-				TaskRunnerManager trm = DataNode.getTaskRunnerManager();
+				TaskRunnerManager trm = DataNode.getTaskRunnerManager(false);
 				if(trm==null){
 					//tell NameNode to gotohell
 					return;
@@ -150,6 +151,23 @@ public class FileRequestProcessor extends Thread{
 			}else if(inMessage.type.equals("Heartbeat")){
 				HeartbeatMessage tm = (HeartbeatMessage) inMessage;
 				//DataNode.nameNode.sendUpdate(tm.jobId, tm.taskId, tm.complete, tm.percent);
+			}else if(inMessage.type.equals("ReducerTask")){
+				TaskMessage tm = (TaskMessage) inMessage;
+				ReducerTask t = (ReducerTask) tm.task;
+				
+				String blockLocalPath = DataNode.rootPath + (FileSystem.DIRECTORYSEPARATOR + tm.fileName);				
+				String jarFileLocalPath = DataNode.rootPath.toString()+FileSystem.DIRECTORYSEPARATOR + t.getJob().getID() + ".jar";
+				HDFSToLocal.MoveToLocal(jarFileLocalPath, t.getJarFilePath());
+				
+				TaskRunnerManager trm = DataNode.getTaskRunnerManager(false);
+				if(trm==null){
+					//tell NameNode to gotohell
+					return;
+				}
+				String[] localPaths = new String[t.getClients().length];
+				//fill in the files
+				trm.LaunchReducerTask( jarFileLocalPath, t.getReducerName(), localPaths, t.getJob().getID(), t.getTaskID());				
+				socket.close();
 			}
 				
 				

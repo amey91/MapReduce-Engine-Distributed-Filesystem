@@ -13,25 +13,31 @@ import communication.Communicator;
 import communication.KeyListMessage;
 
 public class RunInit {
+	@SuppressWarnings("rawtypes")
 	Class<Mapper> mapperClass;
 	Boolean isInitTask;
 	String blockLocalPath;
 	int dataNodeListeningPort;
-	
-	public RunInit(String jarFileLocalPath, String mapperClassName, String blockLocalPath, int dataNodeListeningPort){
 
-		this.mapperClass = (Class<Mapper>) JarLoader.getClassFromJar(jarFileLocalPath, mapperClassName);
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public RunInit(String jarFileLocalPath, String mapperClassName, String blockLocalPath, int dataNodeListeningPort){
+		try{
+			this.mapperClass = (Class<Mapper>) JarLoader.getClassFromJar(jarFileLocalPath, mapperClassName);
+		} catch (Exception e) {
+			Logger.log("Eror while loading Jar file:");
+			e.printStackTrace();
+		}
 		this.blockLocalPath = blockLocalPath;
 		this.dataNodeListeningPort = dataNodeListeningPort;
 	}
-	
-	
+
+
 	public void Run(Socket incomingSocket){
-		
+
 		try {
 			Mapper m = mapperClass.newInstance();
 			Logger.log("dataNodeListeningPort = " + dataNodeListeningPort);
-	
+
 			Socket heartBeatSocket = new Socket("127.0.0.1", dataNodeListeningPort);
 
 			RandomAccessFile file = new RandomAccessFile(blockLocalPath, "r");
@@ -39,14 +45,14 @@ public class RunInit {
 
 			Context context = new Context();
 			long readRequired = (long)(12*Math.log((double)fileLength)/Math.log(2.0));
-			
+
 			long totalRead = 0;
 			while(totalRead < readRequired){
-				
+
 				long location = (long) (Math.random()*fileLength);
 				file.seek(location);
 				//while(file.read()!='\n');
-				
+
 				String s = file.readLine();
 
 				Logger.log(s);
@@ -58,7 +64,7 @@ public class RunInit {
 			KeyListMessage message = new KeyListMessage("InitKeyListMessage", context.getMapperOutputKeys(), estimate);
 			Communicator.sendMessage(incomingSocket, message);
 			file.close();
-		
+
 		} catch (InstantiationException|IllegalAccessException|IOException|InterruptedException e) {
 			// TODO Auto-generated catch block
 			Logger.log(e.getMessage());

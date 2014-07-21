@@ -14,12 +14,15 @@ public class HeartbeatThread extends Thread{
 		{
 			try {
 				if(!stopHB)
-				DataNode.nameNode.Heartbeat(DataNode.key,
-						DataNode.getSizeOfFilesStored(), DataNode.getFreeSpace());
-				
+					// TODO also send free processes at this datanode
+					DataNode.nameNode.Heartbeat(DataNode.key,
+							DataNode.getSizeOfFilesStored(), DataNode.getFreeSpace(), 
+							DataNode.taskTrackerThread.getFreeProcesses(), 
+							DataNode.taskTrackerThread.getTotalProcesses());
+
 				//TODO check this sleep value
 				Thread.sleep(2000);
-				
+
 			} catch (RemoteException | InterruptedException e) {
 				// TODO delete
 				e.printStackTrace();

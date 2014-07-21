@@ -11,6 +11,7 @@ import communication.TaskMessage;
 import conf.Constants;
 import filesystem.DistributedFile;
 import filesystem.FileBlock;
+import filesystem.FileSystemException;
 
 
 // start a task related to a job
@@ -18,12 +19,12 @@ public class InitTask extends Task {
 
 	private static final long serialVersionUID = -2221023034328688071L;
 	
-	DistributedFile file;
+	String inputFilePath;
 	String jarFilePath;
 	String mapperName;
-	InitTask(JobTracker jobTracker, DistributedFile f, String jarFilePath, String mapperName) {
+	InitTask(JobTracker jobTracker, String inputFilePath, String jarFilePath, String mapperName) {
 		super(jobTracker, 0);
-		this.file = f;
+		this.inputFilePath = inputFilePath;
 		this.mapperName = mapperName;
 		this.jarFilePath = jarFilePath;
 	}
@@ -33,8 +34,8 @@ public class InitTask extends Task {
 	}
 
 	// run partition values for keyset within 
-	public Comparable<?>[] execute(){
-		FileBlock[] blocks = file.getFileBlocks();
+	public Comparable<?>[] execute() throws FileSystemException{
+		FileBlock[] blocks = NameNode.fs.getFileBlocks(inputFilePath);
 		long totalSizeEstimate = 0;
 		KeyListMessage keys = null;
 		// array of keys to be compared and partitioned
@@ -80,7 +81,7 @@ public class InitTask extends Task {
 		Comparable<?>[] ranges = new Comparable<?>[numberOfReducers-1];
 		int perSegmentSize = totalArrayLength/numberOfReducers;
 		
-		Logger.errLog("Number of Reducers = " + numberOfReducers);
+		Logger.log("Number of Reducers = " + numberOfReducers);
 		int index = perSegmentSize;
 		for(int i=0; i < numberOfReducers - 1; i++){
 			ranges[i] = mergedArray[index];

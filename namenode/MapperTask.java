@@ -20,9 +20,6 @@ public class MapperTask extends Task implements Serializable{
 		this.fileBlock = fb;
 	}
 	
-	void report(Boolean success){
-		parent.report(success, this);
-	}
 
 	void setSplits(Comparable<?>[] splits){
 		this.splits = splits;

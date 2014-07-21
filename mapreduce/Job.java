@@ -25,7 +25,9 @@ public class Job implements Serializable{
 		this.inputPath = inputPath;
 		this.outputPath = outputPath;
 		this.jarFile = jarPath;
-	}/*
+	}
+	
+/*
 	public int waitForCompletion() {
 		// TODO Auto-generated method stub
 		return 0;

@@ -8,6 +8,7 @@ import commons.Logger;
 import communication.Communicator;
 import communication.KeyListMessage;
 import communication.MapperTaskMessage;
+import communication.ReducerTaskMessage;
 
 /*  @referred: http://www.xyzws.com/Javafaq/how-to-run-external-programs-by-using-java-processbuilder-class/189
  *  Launches a separate JVM with the specified path
@@ -27,7 +28,7 @@ public class TaskRunnerManager extends Thread {
 	ServerSocket listeningSocket;
 	int listeningPort;
 	String rootPath;
-	int taskRunnerPort;
+	int taskRunnerPort; 
 	Boolean isReady = false;
 	Boolean isRunning = false;
 	Thread listeningThread;
@@ -38,6 +39,7 @@ public class TaskRunnerManager extends Thread {
 		this.listeningSocket = new ServerSocket(0);
 		this.listeningPort = this.listeningSocket.getLocalPort();
 		this.rootPath = rootPath;
+		
 	}
 	
 	private void CreateNewJVM(){
@@ -45,8 +47,8 @@ public class TaskRunnerManager extends Thread {
 		if(runningProcess!=null)
 			runningProcess.destroy();
 		try{
-			//String[] command = {"java.exe","-cp", "C:/Users/Amey/workspace/example3", "taskrunner.TaskRunner", String.valueOf(this.listeningPort)};
-			String[] command = {"java.exe","-cp", "E:/example/example3", "taskrunner.TaskRunner", String.valueOf(this.listeningPort)};
+			String[] command = {"java.exe","-cp", "C:/Users/Amey/workspace/example3", "taskrunner.TaskRunner", String.valueOf(this.listeningPort)};
+			//String[] command = {"java.exe","-cp", "E:/example/example3", "taskrunner.TaskRunner", String.valueOf(this.listeningPort)};
 			// String[] command = {"java.exe","-cp", "./", "jobhandler.StartJob","testJobName","testrootpath","testclassName","args"};
 			ProcessBuilder probuilder = new ProcessBuilder( command );
 			//probuilder.directory(new File("c:/Temp"));
@@ -56,7 +58,6 @@ public class TaskRunnerManager extends Thread {
 			
 			System.out.printf("Output of running %s is:\n",
 					Arrays.toString(command));
-			
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -117,15 +118,32 @@ public class TaskRunnerManager extends Thread {
 		// TODO update map of tasks
 	}
 	public void setTaskRunnerPort(int taskRunnerPort) {
-		isReady= true;
+		isReady = true;
 		this.taskRunnerPort = taskRunnerPort;
-		
 	}
 
-	public void sendUpdate(Boolean complete, double percent) {
+	public void sendUpdate(double percent, Boolean complete) {
 		lastHeartBeat = System.currentTimeMillis();
 		if(complete)
 			MarkComplete();
 		percentCompletion = percent;
+	}
+	
+	public void destroyJVM(){
+		this.runningProcess.destroy();
+	}
+
+	public void LaunchReducerTask(String jarFileLocalPath, String reducerName,
+			String[] localPaths, int jobId, int taskId) throws IOException, InterruptedException {
+		
+		if(!isReady)
+				throw new IOException("TaskRunner not ready yet");
+
+		lastHeartBeat = System.currentTimeMillis();
+		isRunning = true;
+		String outputLocalPath = "REDUCER_OUT_" + jobId + "_" + taskId;
+		ReducerTaskMessage rtm = new ReducerTaskMessage(jarFileLocalPath, mapperClassName, localPaths, outputLocalPath);
+		Communicator.sendMessage("127.0.0.1", taskRunnerPort, rtm);
+		
 	}
 }

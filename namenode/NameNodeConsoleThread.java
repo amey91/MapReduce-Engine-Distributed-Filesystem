@@ -17,7 +17,8 @@ public class NameNodeConsoleThread extends Thread{
 	public void run(){
 		while(true){
 			try{
-				Logger.log("Please \"5\" to view a map of registered DataNodes");
+				Logger.log("Please enter\"5\" to view a map of registered DataNodes"
+						+ "\n Please enter \"6\" to view running jobs");
 				choice = br.readLine();
 				if(choice=="" || choice==null){
          			throw new Exception("Blank input not allowed.");
@@ -26,6 +27,9 @@ public class NameNodeConsoleThread extends Thread{
 	         		case("5"):
 	         			NameNode.instance.displayDataNodes();
 	        			break;
+	         		case("6"):
+	         			NameNode.instance.jtThread.displayRunningJobs();
+	         			break;
 	         		default:
 	         			throw new Exception("Invalid Input detected: " + choice);
          		}

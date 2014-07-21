@@ -16,7 +16,7 @@ public class TaskRunnerListeningThread extends Thread {
 	TaskRunnerManager taskRunnerManager;
 	public TaskRunnerListeningThread(Object taskRunnerManager, Socket a){
 		this.socket = a;
-		this.taskRunnerManager = (TaskRunnerManager) taskRunnerManager;
+		this.taskRunnerManager =  (TaskRunnerManager)taskRunnerManager;
 	}
 
 	@Override
@@ -35,7 +35,7 @@ public class TaskRunnerListeningThread extends Thread {
 			else if(inMessage.type.equals("Heartbeat")){
 				
 				HeartbeatMessage hbm = (HeartbeatMessage) inMessage;
-				taskRunnerManager.sendUpdate(hbm.complete, hbm.percent);
+				taskRunnerManager.sendUpdate( hbm.percent,hbm.complete);
 				
 			}
 		} catch (ClassNotFoundException | InterruptedException | IOException e) {

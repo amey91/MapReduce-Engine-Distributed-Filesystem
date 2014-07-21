@@ -24,14 +24,20 @@ public interface NameNodeInterface extends Remote{
 
 		public void confirmLocalToHDFS(String clientKey, Boolean success, String fileName, FileBlock[] blocks)throws RemoteException, FileSystemException, InvalidDataNodeException;
 		
-		public void Heartbeat(String clientKey, long sizeOfStoredFiles, long freeSpace)throws RemoteException, InvalidDataNodeException;
-		
 		public void ConfirmDeletion(String clientKey, String blockName, String nodeLocation)throws RemoteException, InvalidDataNodeException;
 		
-		public int submitJob(String clientKey, Job j) throws InvalidDataNodeException, RemoteException;
+		public int submitJob(String clientKey, Job j) throws InvalidDataNodeException, RemoteException, FileSystemException;
 
 		public FileBlock[] getFileBlocks(String clientKey, String HDFSFilePath) throws RemoteException, InvalidDataNodeException, FileSystemException;
 
 		public ArrayList<String> getNewLocations(String clientKey, ArrayList<String> doneList,
-				ArrayList<String> failList) throws RemoteException, InvalidDataNodeException, FileSystemException;;
+				ArrayList<String> failList) throws RemoteException, InvalidDataNodeException, FileSystemException;
+		
+		public void sendUpdate(String clientKey, Boolean mapperOrReducer, int jobId, int taskId, double percentComplete, 
+				Boolean complete)throws RemoteException, InvalidDataNodeException;
+
+		public void Heartbeat(String key, long sizeOfFilesStored,
+				long freeSpace, int freeProcesses, int totalProcesses) throws RemoteException, InvalidDataNodeException;
+
+		
 }

@@ -1,18 +1,12 @@
 package datanode;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.Socket;
 
 import namenode.InvalidDataNodeException;
-import commons.AddressToIPPort;
 import commons.Logger;
-import communication.Communicator;
-import communication.Message;
-import conf.Constants;
 import filesystem.FileBlock;
 import filesystem.FileSystemException;
 
@@ -94,39 +88,5 @@ public class LocalToHDFS extends Thread {
 		is.close();
 		
 		return divisions;
-	}
-
-	private long[] divideAndSendFile(String localFilePath, int no_of_blocks, FileBlock[] fileBlocks) throws IOException, InterruptedException {
-
-		File localFile = new File(localFilePath);
-
-	    BufferedInputStream bis = new BufferedInputStream(new FileInputStream(localFile));
-
-		long[] fileSizes = getDivisionSizes(localFilePath, no_of_blocks);
-		
-		for(int block = 0; block<no_of_blocks;block++)
-		{
-			Socket socket [] = new Socket[Constants.REPLICATION_FACTOR]; 
-
-			String[] dataNodeLocations = fileBlocks[block].getNodeLocations();
-			// write each block to its destination
-			for(int i=0;i<Constants.REPLICATION_FACTOR;i++){
-				String[] ipPort = AddressToIPPort.addressToIPPort(dataNodeLocations[i]);
-				
-				Logger.log("sending message: "+ipPort[0] + Integer.parseInt(ipPort[1]));
-				socket[i] = new Socket(ipPort[0], Integer.parseInt(ipPort[1]));
-				Message sendMessage = new Message("add");
-				sendMessage.fileName = fileBlocks[block].getBlockFileName();
-				sendMessage.fileSize = fileSizes[block];
-
-				Communicator.sendMessage(socket[i], sendMessage);
-			}
-			
-
-			fileSizes[block] = Communicator.sendStream(socket, bis, fileSizes[block]);
-			
-		}
-		bis.close();
-		return fileSizes;
 	}
 }

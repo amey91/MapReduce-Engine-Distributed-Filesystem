@@ -132,20 +132,29 @@ public class NameNode extends Thread implements NameNodeInterface {
 		Logger.log("New datanode added: "+ myKey);
 	}
 	@Override
-	public void Heartbeat(String clientKey, long sizeOfStoredFiles, long freeSpace) throws RemoteException, InvalidDataNodeException {
+	public void Heartbeat(String clientKey, long sizeOfStoredFiles, long freeSpace, 
+			int freeProcesses, int totalProcesses) throws RemoteException, InvalidDataNodeException {
+		
 		checkKey(clientKey);
 
-		//Logger.log("Got heartbeat for: "+clientKey);
 		for(DataNodeInfo d : dataNodeList){
 			if(d.getId().equals(clientKey))
 				d.setLastSeen(System.currentTimeMillis());
 			d.setFreeSpace(freeSpace);
 			d.setsizeOfStoredFiles(sizeOfStoredFiles);
+			for(DataNodeInfo node : dataNodeList){
+				if(node.getId().equals(clientKey)){
+					node.setFreeProcesses(freeProcesses);
+					node.setTotalProcesses(totalProcesses);
+					break;
+				}
+			}
+			
 		}
 	}
 
 	@Override
-	public int submitJob(String clientKey, Job j) throws RemoteException, InvalidDataNodeException {
+	public int submitJob(String clientKey, Job j) throws RemoteException, InvalidDataNodeException, FileSystemException {
 		checkKey(clientKey);
 		return jtThread.addJob(j);
 	}
@@ -262,14 +271,51 @@ public class NameNode extends Thread implements NameNodeInterface {
 			return returnList;
 	}
 
-	public String findAppropriateNode(DistributedFile f) {
-		// TODO Auto-generated method stub
-		return null;
+	public String findExecuteLocation(String[] nodeLocations) throws InvalidDataNodeException {		
+		// if block is present on node and there is space left, select that node
+		// check for all replication factors of the block
+		int free = 0;
+		String destination = null;
+		for(int i = 0; i<nodeLocations.length;i++){
+			checkKey(nodeLocations[i]);
+			int nodeFreeProcesses =dataNodeList.get(dataNodeList.indexOf(nodeLocations[i])).getFreeProcesses(); 
+			// choose most free
+			if(free < nodeFreeProcesses){
+				free = nodeFreeProcesses;
+				destination = nodeLocations[i];
+			}
+		}
+		if(free != 0 && !destination.equals(null))
+			return destination;
+		
+		if(destination.equals(null))
+			throw new InvalidDataNodeException("Null key found in scheduler algorithm");
+		
+		// if a node that does not have block is free, allocate
+		free = 0;
+		destination = null;
+		for(DataNodeInfo d : dataNodeList){
+			// get most free
+			if(free<d.getFreeProcesses()){
+				free = d.getFreeProcesses();
+				destination = d.getId();
+			}
+		}
+		
+		if(free !=0 && !destination.equals(null))
+			return destination;
+		if(destination.equals(null))
+			throw new InvalidDataNodeException("Null key found in scheduler algorithm");
+		// if no nodes are free, enque job 
+		
+		return "-1";
 	}
 
-	public String findExecuteLocation(String[] nodeLocations) {
-		// TODO  Find smart algo to find execute Location
-		return nodeLocations[0];
+	@Override
+	public void sendUpdate(String clientKey, Boolean mapperOrReducer, int jobId, int taskId,
+			double percentComplete, Boolean complete) throws RemoteException, InvalidDataNodeException {
+		checkKey(clientKey);
+		jtThread.sendUpdate(clientKey, mapperOrReducer, jobId, taskId, percentComplete, complete);		
 	}
 
 }

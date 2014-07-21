@@ -95,11 +95,13 @@ public class DataNode {
 
 		numOfMappers = getNumberOfMappers();
 		taskRunnerManagers = new TaskRunnerManager[numOfMappers];
+		taskTrackerThread.initializeTaskRunnerManagerInterface(numOfMappers);
 		Logger.log("NUM OF MAPPERS  = " + numOfMappers);
 		for(int i =0; i< taskRunnerManagers.length;i++){
 			try {
 				taskRunnerManagers[i] = new TaskRunnerManager(rootPath.toString());
 				taskRunnerManagers[i].start();
+				taskTrackerThread.register(i,taskRunnerManagers[i]);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -112,13 +114,12 @@ public class DataNode {
 	}
 
 	private static int getNumberOfMappers() {
-		// default
+		// default TODO change to 6 before submission
 		int cores = 1;
-		Logger.log("Inside!");
 		File cpuInfo = new File("/proc/cpuinfo");
 		//check if AFS /proc/cpuinfo exists
 		if(!cpuInfo.exists()){
-			Logger.errLog("NO SUCH CPUINFO FILE ");
+			Logger.errLog("NO CPUINFO FILE. Using default value of 6 cores.");
 			return cores;
 		}
 		try{
@@ -233,17 +234,30 @@ public class DataNode {
 		}
 	}
 
-	public static TaskRunnerManager getTaskRunnerManager() {
+	public TaskRunnerManager getTaskRunnerManager(Boolean isInitTask) {
 		for(int i =0; i< taskRunnerManagers.length;i++){
 			Logger.log("trm"+i);
 			if(taskRunnerManagers[i]==null)
-				Logger.log("sddfs");
-			if(taskRunnerManagers[i].isReady() && !taskRunnerManagers[i].isRunning())
+				Logger.log("taskmanager " + i + "is null!!");
+			if(taskRunnerManagers[i].isReady() && (isInitTask||!taskRunnerManagers[i].isRunning()) )
 				return taskRunnerManagers[i];
+			else {
+				Logger.log("Inside gettaskrunner at datanodemain: "+ taskRunnerManagers[i].isReady() +" "+ !taskRunnerManagers[i].isRunning() + "");
+			}
 		}
 		//TODO none ready -> put in queue?
 		Logger.log("No Task Runner Ready");
 		return null;
 		
 	}	
+	
+	public static void destroyJVMs(){
+		// cleanup launched JVMs before exit
+		for(TaskRunnerManager t : taskRunnerManagers){
+			t.destroyJVM();
+			Logger.log("Stopping operations on this datanode...");
+			System.exit(0);
+		}
+		
+	}
 }

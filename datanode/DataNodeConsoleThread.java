@@ -115,11 +115,14 @@ public class DataNodeConsoleThread extends Thread{
          			// TODO
         			 break;
          		case("key"):
-         			
          				log("my key: " + DataNode.key);
-
-         			// TODO
         			 break;
+        		// TODO delete xs
+         		case("x"):
+         		case("X"):
+         		case("destroy_JVMs"):
+         				DataNode.destroyJVMs();
+         			break;
          		case("help"):
          			log(	  "\n=================================================================="
     						+ "\nPlease enter one of the following: (No spaces allowed in file name)"
@@ -132,7 +135,8 @@ public class DataNodeConsoleThread extends Thread{
     						+ "\n stopJob <jobId>"
     						+ "\n monitor"
     						+ "\n key"
-    						+ "\nstophb \n");
+    						+ "\n stophb "
+    						+ "\n destroy_JVMs ");
          			break;
          		default:
          			throw new IOException("Wrong input! Enter <help> for info");
@@ -142,11 +146,14 @@ public class DataNodeConsoleThread extends Thread{
 				DataNode.reset();
 			}catch (IOException e) {
 				Logger.log("Error while parsing input: "+e.getMessage());
+			} catch (FileSystemException e) {
+				Logger.log("FileSystem error.");
+				e.printStackTrace();
 			}
 		}//end of while
 	}
 	
-	private void startJob(String[] choices) throws InvalidDataNodeException {
+	private void startJob(String[] choices) throws InvalidDataNodeException, FileSystemException {
 		
 		// TODO 
 		
