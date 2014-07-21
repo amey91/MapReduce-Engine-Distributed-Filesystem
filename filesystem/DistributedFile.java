@@ -2,10 +2,9 @@ package filesystem;
 
 import java.io.Serializable;
 
+// a representation of my distributed file and things required to identify and retrieve it
 public class DistributedFile implements Serializable{
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = -4449361261647377875L;
 	Directory parent;
 	String fileName;

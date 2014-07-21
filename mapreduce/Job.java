@@ -1,10 +1,6 @@
 package mapreduce;
 
 import java.io.Serializable;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import temperaturetest.MaxTemperatureMapper;
 
 public class Job implements Serializable{
 

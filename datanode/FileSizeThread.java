@@ -4,6 +4,8 @@ import java.io.File;
 
 import commons.Logger;
 
+// calculate the size of files stored at this datanode
+
 public class FileSizeThread extends Thread {
 
 	@Override 

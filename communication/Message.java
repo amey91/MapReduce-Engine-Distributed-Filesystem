@@ -2,6 +2,9 @@ package communication;
 
 import java.io.Serializable;
 
+
+//type of message.
+// numerous other message types are derived from it
 public class Message implements Serializable{
 	//message can be of type = "add" | "remove" 
 	//						 = "start" | "stop"	

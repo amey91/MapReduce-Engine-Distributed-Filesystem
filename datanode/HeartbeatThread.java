@@ -4,6 +4,8 @@ import java.rmi.RemoteException;
 
 import namenode.InvalidDataNodeException;
 
+
+//send a heartbeat containing info about datanode
 public class HeartbeatThread extends Thread{
 	public static boolean stopHB = false;
 	@Override

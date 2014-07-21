@@ -6,10 +6,12 @@ import java.util.Arrays;
 
 import commons.Logger;
 
+
+// implements virtual representation of my filesystem
+// it is hierarchical rather than flat to 
+// increase usability (providing usefule features like ls and dir efficiently)
 public class Directory implements Serializable{
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 7072072642396423372L;
 	
 	String directoryName;

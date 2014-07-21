@@ -11,7 +11,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-
+// start a job at this datanode
 public class StartJob {
 	static Path rootPath ;
 	static String classNameToRun;
@@ -32,7 +32,7 @@ public class StartJob {
 	public static void main(String args[]) throws InterruptedException, IOException{
 		int numArgs = args.length;
 		if(numArgs < 3)
-			System.out.println("StartJob Usage: <jobName> <className> <rootPath> <outputFileName> <arguments(optional)>");
+			System.out.println("StartJob Usage: startJob <jobName> <className> <rootPath> <outputFileName> <arguments(optional)>");
 		
 		
 		for(int i = 3; i<numArgs; i++){

@@ -2,6 +2,8 @@ package communication;
 
 import namenode.Task;
 
+
+//type of message
 public class TaskMessage extends Message{
 
 	private static final long serialVersionUID = -2936828532419035077L;

@@ -12,10 +12,11 @@ import namenode.InvalidDataNodeException;
 import commons.Logger;
 import filesystem.FileSystemException;
 
+// thread for managing user i/p on datanodes
 public class DataNodeConsoleThread extends Thread{
 	/*
 	 *  TODO implement:
-	 *  ls, rm, mkdir, start, stop job, monitor
+	 *  start, stop job, monitor
 	 */
 	BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 	String choice;

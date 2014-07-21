@@ -8,7 +8,7 @@ import commons.Logger;
 import communication.Communicator;
 import communication.Message;
 
-
+// delete files by en-queuing them in a delete queue
 public class DeleteFileThread extends Thread{
 
 	ConcurrentLinkedQueue<BlockLocationPair> deletionQueue 
@@ -18,7 +18,7 @@ public class DeleteFileThread extends Thread{
 	public void push(String fileName, String nodeLocation){
 		deletionQueue.add(new BlockLocationPair(fileName, nodeLocation));
 	}
-
+	// remove inly after confirmation is received
 	public void remove(String fileName, String nodeLocation){
 		deletionQueue.remove(new BlockLocationPair(fileName, nodeLocation));
 	}
@@ -37,7 +37,9 @@ public class DeleteFileThread extends Thread{
 						Message inputMessage = new Message("remove");
 						inputMessage.fileName = blockName;
 						
+						// send delete message for the file
 						Communicator.sendMessage(ipPort[0], Integer.parseInt(ipPort[1]), inputMessage);
+						
 					} catch (NumberFormatException | InterruptedException | IOException e) {
 						// TODO delete
 						e.printStackTrace();

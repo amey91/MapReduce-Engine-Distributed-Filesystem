@@ -6,6 +6,9 @@ import commons.Logger;
 import filesystem.FileBlock;
 import filesystem.FileSystemException;
 
+
+// info for all datanodes
+// essential in scheduling jobs/files
 public class DataNodeInfo implements Comparable<DataNodeInfo>{
 	
 	private String id;

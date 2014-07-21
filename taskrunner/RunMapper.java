@@ -7,17 +7,17 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.RandomAccessFile;
 import java.net.Socket;
 
 import commons.Logger;
 import communication.Communicator;
 import communication.HeartbeatMessage;
-import communication.KeyListMessage;
 import jarmanager.JarLoader;
 import mapreduce.Context;
 import mapreduce.Mapper;
 
+
+// run a mapper task for the specified file block
 public class RunMapper {
 	
 	Class<Mapper> mapperClass;
@@ -27,7 +27,7 @@ public class RunMapper {
 	int dataNodeListeningPort;
 	
 	public RunMapper(String jarFileLocalPath, String mapperClassName, String blockLocalPath, 
-			String outputLocalPath, int dataNodeListeningPort){
+			String outputLocalPath, int dataNodeListeningPort) throws Exception{
 
 		this.mapperClass = (Class<Mapper>) JarLoader.getClassFromJar(jarFileLocalPath, mapperClassName);
 		this.blockLocalPath = blockLocalPath;

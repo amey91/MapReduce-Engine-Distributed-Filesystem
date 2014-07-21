@@ -13,6 +13,8 @@ import communication.Communicator;
 import communication.Message;
 import conf.Constants;
 
+
+// info about the block i.e. part of a file
 public class FileBlock implements Serializable{
 	
 	private static final long serialVersionUID = -1942709905910279925L;

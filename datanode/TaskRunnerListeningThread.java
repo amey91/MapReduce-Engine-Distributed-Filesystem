@@ -8,6 +8,8 @@ import communication.Communicator;
 import communication.HeartbeatMessage;
 import communication.Message;
 
+
+// Listens to a particular task runner process on the datanode
 public class TaskRunnerListeningThread extends Thread {
 
 	Socket socket;

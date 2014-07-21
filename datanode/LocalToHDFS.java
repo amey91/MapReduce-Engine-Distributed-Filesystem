@@ -16,6 +16,9 @@ import conf.Constants;
 import filesystem.FileBlock;
 import filesystem.FileSystemException;
 
+
+// takes a file on  local filesystem and puts it into 
+// my DFS. 
 public class LocalToHDFS extends Thread {
 	String localFilePath;
 	String HDFSFilePath;
@@ -33,7 +36,7 @@ public class LocalToHDFS extends Thread {
 		FileBlock[] fileBlocks = null;
 		int no_of_blocks = 1;
 		try {
-				
+			// number of file blocks are already decided by namenode 
 			fileBlocks = DataNode.nameNode.localToHDFS(DataNode.key, HDFSFilePath, file.length());
 			no_of_blocks =  fileBlocks.length;
 			
@@ -43,8 +46,10 @@ public class LocalToHDFS extends Thread {
 				Logger.log("BlockFileName:"+f.getBlockFileName()+ " | Nodes: "+res[0]+"|"+res[1]+"|"+res[2]);
 			}
 
-			// divide the file into smaller blocks
+			// decide size of smaller blocks
 			long[] splitSizes = getDivisionSizes(localFilePath, no_of_blocks);
+			
+			// copy these files to the other locations
 			DataNode.fcThread.add(localFilePath, HDFSFilePath, fileBlocks, splitSizes);
 			
 			//long[] result = divideAndSendFile(localFilePath, no_of_blocks, fileBlocks);

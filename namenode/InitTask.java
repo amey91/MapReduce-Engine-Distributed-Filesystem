@@ -12,11 +12,10 @@ import conf.Constants;
 import filesystem.DistributedFile;
 import filesystem.FileBlock;
 
+
+// start a task related to a job
 public class InitTask extends Task {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -2221023034328688071L;
 	
 	DistributedFile file;

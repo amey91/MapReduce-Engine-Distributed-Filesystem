@@ -20,6 +20,7 @@ import commons.AddressToIPPort;
 import commons.Logger;
 
 // this class was created by me in the last DS assignment. I have reused it almost completely
+// This is responsible for various modes of communication like send-receive, send-only etc..
 public class Communicator {
 	
 	// accept created socket and do not close it after use

@@ -1,11 +1,9 @@
 package communication;
 
+
+// type of message 
 public class MapperTaskMessage extends Message {
 
-	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -5663891075722279082L;
 	
 	public String jarFileLocalPath;

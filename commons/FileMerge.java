@@ -7,6 +7,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+// used by some functions like HDFStoLocal to convert file blocks into a single file
+
 public class FileMerge {
 
 	//@referred: http://www.programcreek.com/2012/09/merge-files-in-java/

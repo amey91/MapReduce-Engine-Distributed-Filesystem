@@ -5,11 +5,13 @@ import java.util.Arrays;
 
 import commons.Logger;
 
+
+// this is an aggregation of functionality provided by my DFS
 public class FileSystem {
 	public static final char DIRECTORYSEPARATOR = '/';
 
 	private Directory rootDirectory;
-
+	// lock prevents simultaneous access to multiple nodes/users
 	Object lock = new Object();
 
 	public FileSystem(){
@@ -58,12 +60,18 @@ public class FileSystem {
 			return getThisWorkingDirectory(pathNodes).getList();
 		}
 	}
+	
+	// this function creates a proxy for the file blocks till we receive a confirmation for the entire file
+	// this is done so that two users cannot create a file with the 
+	// 			same name even though the first file is not confirmed in the DFS yet 
 	public void InsertFileProxy(String pathToFile) throws FileSystemException{
 		synchronized(lock){
 			String pathNodes[] = pathToFile.split( Character.toString(DIRECTORYSEPARATOR));
 			getPreviousWorkingDirectory(pathNodes).AddFileProxy(pathNodes[pathNodes.length-1]);
 		}
 	}
+	
+	// remove the file proxy after confirmation is received
 	public void RemoveFileProxy(String pathToFile) throws FileSystemException{
 		synchronized(lock){
 			String pathNodes[] = pathToFile.split( Character.toString(DIRECTORYSEPARATOR));

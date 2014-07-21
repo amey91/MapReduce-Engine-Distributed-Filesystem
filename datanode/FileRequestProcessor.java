@@ -17,6 +17,9 @@ import communication.Message;
 import communication.TaskMessage;
 import filesystem.FileSystem;
 
+
+// this thread is responsible for processing requests received on 
+// the file port of the datande
 public class FileRequestProcessor extends Thread{
 	Socket socket;
 
@@ -73,13 +76,13 @@ public class FileRequestProcessor extends Thread{
 							new FileInputStream(DataNode.rootPath + (FileSystem.DIRECTORYSEPARATOR + blockName)));
 					
 					
+					// add a new file to datanode
 					Message m = new Message("add");
 					m.fileName = blockName;
 					m.fileSize = sendFile.length();
 					Communicator.sendMessage(outSocket, m);
 					
 					Boolean success = Communicator.sendStream(outSocket, bis, sendFile.length())==sendFile.length();
-						
 					
 					Message confirmation = new Message(success?"success":"fail");
 					
@@ -87,6 +90,7 @@ public class FileRequestProcessor extends Thread{
 					
 					outSocket.close();
 					socket.close();
+					
 				}catch(IOException | InterruptedException e){
 					try {
 						
@@ -150,7 +154,6 @@ public class FileRequestProcessor extends Thread{
 				
 				
 		} catch (IOException|InterruptedException|ClassNotFoundException e) {
-			//TODO delete
 			Logger.log(e.getMessage());
 			e.printStackTrace();
 		} catch (InvalidDataNodeException e) {

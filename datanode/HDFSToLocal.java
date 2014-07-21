@@ -15,6 +15,8 @@ import filesystem.FileBlock;
 import filesystem.FileSystem;
 import filesystem.FileSystemException;
 
+// produces a local copy of a file which is stroed on my DFS
+// I call it HDFS only because I was following conventions and it was inspired from Hadoop DFS
 public class HDFSToLocal extends Thread {
 	String localFilePath;
 	String HDFSFilePath;

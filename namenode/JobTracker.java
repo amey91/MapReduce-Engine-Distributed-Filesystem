@@ -8,6 +8,8 @@ import mapreduce.Job;
 
 import java.io.Serializable;
 
+
+// track the jobs on datanodes
 public class JobTracker implements Serializable{
 
 	private static final long serialVersionUID = -1064895292740185904L;

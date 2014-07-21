@@ -22,7 +22,7 @@ import mapreduce.Context;
 import mapreduce.Mapper;
 import filesystem.Directory;
 
-
+// This class is used to load a class
 public class TestClient {
 	public static void main(String[] argv) throws Exception {
 		

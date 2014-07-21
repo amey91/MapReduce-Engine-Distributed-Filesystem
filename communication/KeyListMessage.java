@@ -1,6 +1,6 @@
 package communication;
 
-
+// type of message
 //Message containing range of keys for map-reduce job partitioning
 public class KeyListMessage extends Message{
 

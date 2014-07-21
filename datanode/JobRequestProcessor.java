@@ -1,5 +1,6 @@
 package datanode;
 
+// processes job requests received at the datanode's job socket
 
 import java.io.IOException;
 import java.net.Socket;
@@ -22,6 +23,12 @@ public class JobRequestProcessor extends Thread{
 			Logger.log("Received Message: " + m.type);
 			
 			if(m.type.equals("Mapper")){
+				
+				// TODO
+			}
+			
+			else if(m.type.equals("Reducer")){
+				// TODO
 			}
 		}
 		catch(IOException | ClassNotFoundException | InterruptedException e){

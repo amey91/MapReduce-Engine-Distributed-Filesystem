@@ -1,7 +1,13 @@
 package namenode;
+
+// unique identifier for a particular file block
+
 class BlockLocationPair{
+	// unique name for the block
 	String blockName;
+	// location where it exists
 	String nodeLocation;
+	
 	BlockLocationPair(String blockName, String nodeLocation){
 		this.blockName = blockName;
 		this.nodeLocation = nodeLocation;

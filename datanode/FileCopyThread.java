@@ -19,7 +19,8 @@ import conf.Constants;
 import filesystem.FileBlock;
 import filesystem.FileSystemException;
 
-
+// this thread maintains the addition queue which is a queue of file blocks to 
+// be sent to other nodes
 public class FileCopyThread extends Thread{
 
 
@@ -221,7 +222,7 @@ class DistFile{
 			Logger.log(e.getMessage());
 			e.printStackTrace();
 		} catch (InvalidDataNodeException e) {
-			// TODO Auto-generated catch block
+			Logger.errLog("Invalid datanode. Resetting Datanode!");
 			DataNode.reset();
 		}
 	}
