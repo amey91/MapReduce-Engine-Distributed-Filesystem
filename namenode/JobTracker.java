@@ -19,7 +19,7 @@ import filesystem.FileSystemException;
 public class JobTracker implements Serializable{
 
 	private static final long serialVersionUID = -1064895292740185904L;
-	
+
 	String mapperClassName;
 	String reducerClassName;
 	String inputPath;
@@ -27,34 +27,34 @@ public class JobTracker implements Serializable{
 	String jobName;
 	String jarFilePath;
 	String datanodeKey; 
-	
+	String reportLock = new String();
 	Integer jobId;
-	
+
 	InitTask initTask;
 	MapperTask[] mapperTaskArray;
 	ReducerTask[] reducerTaskArray;
-	
+
 	int numMapperTasksComplete;
 	Boolean[] mapperTaskSuccessArray;
 	Boolean[] reducerTaskSuccessArray;
-	
+
 	double[] mapperTaskCompletion;
 	double[] reducerTaskCompletion;
-	
+
 	Boolean mapperPhaseComplete = false;
 	int numberOfMappers;
-	
+
 	String[] reducerClients;
-	
+
 	private void splitMapperTasksJobs() throws FileSystemException{
 		FileBlock[] blocks = NameNode.fs.getFileBlocks(inputPath); 
 		numberOfMappers = blocks.length;
-		
-		
+
+
 		mapperTaskArray = new MapperTask[numberOfMappers];
 		for(int i=0; i < numberOfMappers; i++)
 			mapperTaskArray[i] = new MapperTask(this, i, blocks[i]);
-		
+
 		mapperTaskSuccessArray = new Boolean[numberOfMappers];
 		mapperTaskCompletion = new double[numberOfMappers];
 		for(int i=0; i< mapperTaskSuccessArray.length;i++){
@@ -71,14 +71,14 @@ public class JobTracker implements Serializable{
 		this.inputPath = job.inputPath;
 		this.outputPath = job.outputPath;
 		this.jarFilePath = job.jarFile;
-		
+
 
 		initTask = new InitTask(this, inputPath, job.jarFile, mapperClassName);
 		splitMapperTasksJobs();
 	}
 
 	public void run(){
-		
+		Logger.log("IN run");
 		Comparable<?>[] splits = null;
 		try {
 			splits = initTask.execute();
@@ -99,17 +99,18 @@ public class JobTracker implements Serializable{
 			else
 				reducerTaskArray[i] = new ReducerTask(this, i, splits[i-1], splits[i], numberOfMappers);
 		}
-		
+
 		reducerTaskSuccessArray = new Boolean[numberOfReducers];
 		reducerTaskCompletion = new double[numberOfReducers];
 		for(int i=0; i < numberOfReducers; i++){
 			reducerTaskSuccessArray[i] = false;
 			reducerTaskCompletion[i] = 0.0;
 		}
-		
+
 		numMapperTasksComplete = 0;
 		for(int i=0; i < mapperTaskArray.length; i++){
 			try {
+				mapperTaskArray[i].setSplits(splits);
 				mapperTaskArray[i].execute();
 			} catch (InvalidDataNodeException e) {
 				e.printStackTrace();
@@ -119,7 +120,7 @@ public class JobTracker implements Serializable{
 	}
 	private void handleFailure() {
 		// TODO Auto-generated method stub
-		
+
 	}
 	public int getID() {
 		return jobId;
@@ -127,7 +128,7 @@ public class JobTracker implements Serializable{
 	public String getJarFilePath() {
 		return jarFilePath;
 	}
-	
+
 	@Override
 	public String toString(){
 		return "JobID: " + this.jobId + " Name: " + this.jobName + " Running on: " + this.datanodeKey;
@@ -135,62 +136,75 @@ public class JobTracker implements Serializable{
 	public void report(String clientKey, Boolean isMapper, int taskId,
 			double percentComplete, Boolean complete) {
 
-		//TODO sync
-		
-		if(!mapperPhaseComplete && isMapper){
-			
-			mapperTaskCompletion[taskId] = percentComplete;
-			if(complete){
-				mapperTaskSuccessArray[taskId] = true;
-			
-				Boolean isComplete = true;
-				for(Boolean b: mapperTaskSuccessArray)
-					if(!b)
-						isComplete = false;
-				
-				mapperPhaseComplete = isComplete;
-				
-				for(ReducerTask reducer: reducerTaskArray){
-					reducer.addProvider(taskId, clientKey);
-					if(mapperPhaseComplete){
-						try {
-							reducer.execute();
-						} catch (InvalidDataNodeException e) {
-							e.printStackTrace();
-							handleFailure();
+		synchronized(reportLock){
+
+			if(!mapperPhaseComplete && isMapper){
+
+				mapperTaskCompletion[taskId] = percentComplete;
+				if(complete){
+					
+					for(DataNodeInfo d: NameNode.instance.dataNodeList)
+						if(d.getId().equals(clientKey))
+							d.removeRunningTask(mapperTaskArray[taskId]);
+						
+						
+					mapperTaskSuccessArray[taskId] = true;
+
+					Boolean isComplete = true;
+					for(Boolean b: mapperTaskSuccessArray)
+						if(!b)
+							isComplete = false;
+
+					mapperPhaseComplete = isComplete;
+
+					for(ReducerTask reducer: reducerTaskArray){
+						reducer.addProvider(taskId, clientKey);
+						if(mapperPhaseComplete){
+							try {
+								reducer.execute();
+							} catch (InvalidDataNodeException e) {
+								e.printStackTrace();
+								handleFailure();
+							}
 						}
 					}
 				}
 			}
-		}
-		else if(mapperPhaseComplete && !isMapper){
-			reducerTaskCompletion[taskId] = percentComplete;
-			if(complete){
-				mapperTaskSuccessArray[taskId] = true;
-				reducerClients[taskId] = clientKey;
-				Boolean isComplete = true;
-				for(Boolean b: mapperTaskSuccessArray)
-					if(!b)
-						isComplete = false;
-				
-				if(isComplete){
-					MergeAndUploadMessage m = new MergeAndUploadMessage(jobId, reducerClients, 
-							outputPath + FileSystem.DIRECTORYSEPARATOR + "out");
+			else if(mapperPhaseComplete && !isMapper){
+				reducerTaskCompletion[taskId] = percentComplete;
+				if(complete){
+					for(DataNodeInfo d: NameNode.instance.dataNodeList)
+						if(d.getId().equals(clientKey))
+							d.removeRunningTask(reducerTaskArray[taskId]);
 					
-					
-					try {
-						Socket sendingSocket = Communicator.CreateTaskSocket(reducerClients[0]);
-						Communicator.sendMessage(sendingSocket, m);
-						sendingSocket.close();
-						//TODO tell all nodes to clean the job files
-					} catch (IOException e) {
-						e.printStackTrace();
-						handleFailure();
+					reducerTaskSuccessArray[taskId] = true;
+					Logger.log(taskId+clientKey);
+					reducerClients[taskId] = clientKey;
+					Boolean isComplete = true;
+					for(Boolean b: reducerTaskSuccessArray)
+						if(!b)
+							isComplete = false;
+
+					if(isComplete){
+						MergeAndUploadMessage m = new MergeAndUploadMessage(jobId, reducerClients, 
+								outputPath + FileSystem.DIRECTORYSEPARATOR + "out");
+
+
+						try {
+							Socket sendingSocket = Communicator.CreateTaskSocket(reducerClients[0]);
+							Communicator.sendMessage(sendingSocket, m);
+							sendingSocket.close();
+							//TODO tell all nodes to clean the job files
+						} catch (IOException e) {
+							e.printStackTrace();
+							handleFailure();
+						}
+						NameNode.instance.jtThread.remove(jobId);
 					}
 				}
 			}
-		}
-		else
-			Logger.log("Phase of Job Tracker is wrong");
+			else
+				Logger.log("Phase of Job Tracker is wrong");
+		}//end of report
 	}
 }

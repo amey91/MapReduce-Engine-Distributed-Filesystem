@@ -1,9 +1,9 @@
 package namenode;
 
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import commons.Logger;
-
 import filesystem.FileBlock;
 import filesystem.FileSystemException;
 
@@ -21,6 +21,8 @@ public class DataNodeInfo implements Comparable<DataNodeInfo>{
 	private ArrayList<String> fileProxyList;
 	// these file blocks will temporarily store the unconfirmed blocks for each file
 	public ArrayList<FileBlock> tempFileBlocks;
+	
+	public ConcurrentLinkedQueue<Task> taskQueue = new ConcurrentLinkedQueue<Task>();
 	
 	public DataNodeInfo(String id){
 		this.setId(id);
@@ -122,6 +124,9 @@ public class DataNodeInfo implements Comparable<DataNodeInfo>{
 				}
 			}//end of push to delete thread	
 			
+			for(Task t:taskQueue)
+				NameNode.instance.taskQueue.addJob(t);
+			
 		} catch(FileSystemException e){
 			
 			//TODO delete
@@ -144,6 +149,22 @@ public class DataNodeInfo implements Comparable<DataNodeInfo>{
 
 	public void setTotalProcesses(int totalProcesses) {
 		this.totalProcesses = totalProcesses;
+	}
+
+	public void addRunningTask(Task task) {
+		taskQueue.add(task);
+		
+	}
+	
+	public void removeRunningTask(Task task) {
+		for(Task t:taskQueue){
+			if(t.getJob().getID() == task.getJob().getID() && t.getTaskID() == task.getTaskID()){
+				if(t instanceof MapperTask &&task instanceof MapperTask)
+					taskQueue.remove(t);
+				if(t instanceof ReducerTask &&task instanceof ReducerTask)
+					taskQueue.remove(t);
+			}
+		}
 	}
 	
 }

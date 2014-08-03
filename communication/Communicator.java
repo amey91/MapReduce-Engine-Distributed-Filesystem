@@ -29,6 +29,11 @@ public class Communicator {
 			throw new IOException("Communicator received invalid socket");
 		ObjectOutputStream os = new ObjectOutputStream(sendingSocket.getOutputStream());
 		os.writeObject(m);
+		/*try {
+			Thread.sleep(200);
+		} catch (InterruptedException e) {
+			Logger.log("Ignore");
+		}*/
 	}
 
 	// create the socket, send message and then close the socket
@@ -63,7 +68,6 @@ public class Communicator {
 	public static Message sendAndReceiveMessage(Socket socket, Message inputMessage) throws UnknownHostException, IOException, ClassNotFoundException {
 		Communicator.sendMessage(socket, inputMessage);
 		Message newObj = (Message)Communicator.receiveMessage(socket);
-		socket.close();
 		return newObj;
 	}
 	
@@ -88,7 +92,7 @@ public class Communicator {
 	    		break;
 	    	
 	        bos.write(bytearray, 0, bytesRead);
-	        System.out.println(" "+bytesRead);;
+	        //System.out.println(" "+bytesRead);;
 	        bytesLeft -= bytesRead;
 		}
 	    bos.close();
@@ -105,7 +109,7 @@ public class Communicator {
 		
 	    long fileSizeReceived = receiveStream(socket, fos, fileSize);
 	    fos.close();
-	    Logger.log("received: "+filePath+ ":" + fileSizeReceived+"/"+fileSize);
+	    //Logger.log("received: "+filePath+ ":" + fileSizeReceived+"/"+fileSize);
 	    return fileSizeReceived;
 	}
 	
@@ -117,7 +121,7 @@ public class Communicator {
 		try {
 			constructorNew = T. getConstructor(Object.class, Socket.class);
 			 	
-			Logger.log(T.getName()+ " listening on "+ listeningSocket.getInetAddress().getHostAddress()+ ":"+ listeningSocket.getLocalPort());
+			//Logger.log(T.getName()+ " listening on "+ listeningSocket.getInetAddress().getHostAddress()+ ":"+ listeningSocket.getLocalPort());
 
 		} catch (NoSuchMethodException e1) {
 			Logger.log("Method call failed or you entered invalid data.");
@@ -127,13 +131,12 @@ public class Communicator {
 		while(true){
 			// setup the socket for the server that listens to clients 
 			try {
-				System.out.println(T.getName() + " waiting for new message...");
+				//System.out.println(T.getName() + " waiting for new message...");
 				Socket clientSocket = listeningSocket.accept();
 				Thread instance = (Thread)constructorNew.newInstance(input, (Object)clientSocket);
 				new Thread(instance).start();
 				
 			} catch (IOException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-				e.printStackTrace();
 				System.out.println("Error while opening port at registry server");				
 			}
 		}//end of true	
@@ -164,12 +167,12 @@ public class Communicator {
 			
 			int bytesRead = bis.read(byteArray, 0, bytesToRead);
 			
-			if(bytesRead==0){
+			if(bytesRead<=0){
 				break;
 			}
 				
 			
-			Logger.log("sending " + bytesRead + " " +totalTransferred);
+			//Logger.log("sending " + bytesRead + " " + (totalTransferred+bytesRead));
 
 			//for(int i=0; i<os.length; i++)
 			os[0].write(byteArray, 0, bytesRead);
@@ -177,7 +180,6 @@ public class Communicator {
 			totalTransferred += bytesRead;
 		}//end of while
 
-		Logger.log("out of send ");
 		return totalTransferred;
 	}
 

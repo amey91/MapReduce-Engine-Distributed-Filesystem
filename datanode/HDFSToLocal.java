@@ -83,6 +83,7 @@ public class HDFSToLocal extends Thread {
 						Logger.log("one node failed! trying another: " + e.getMessage());
 						// TODO delete
 						e.printStackTrace();
+						break;
 					}
 				}
 				

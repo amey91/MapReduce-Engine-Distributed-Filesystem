@@ -1,5 +1,7 @@
 package testfiles;
 
+import jarmanager.JarLoader;
+
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -8,6 +10,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import mapreduce.Mapper;
 import commons.Logger;
 class Club implements Serializable{
 /**
@@ -28,7 +31,10 @@ class Club implements Serializable{
 	}
 }
 public class Test3 {
-	public static void main(String ar[]) throws IOException, InterruptedException, ClassNotFoundException{
+	public static void main(String ar[]) throws Exception{
+		
+		Class<Mapper> mapperClass = (Class<Mapper >) JarLoader.getClassFromJar(
+				"C:\\loc\\1/0.jar",	"temperature.Mapper1");
 		
 		String location = "C:/loc/t.tmp";
 		ArrayList<Club> club1 = new ArrayList<Club>();

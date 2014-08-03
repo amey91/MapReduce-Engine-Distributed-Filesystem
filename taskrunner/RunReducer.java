@@ -10,7 +10,6 @@ import mapreduce.Context;
 import mapreduce.KeyValuePair;
 import mapreduce.Reducer;
 import commons.Logger;
-import communication.KeyListMessage;
 
 public class RunReducer<Key1 extends Comparable<Key1>, Value1, Key2 extends Comparable<Key2>, Value2> {
 
@@ -22,17 +21,21 @@ public class RunReducer<Key1 extends Comparable<Key1>, Value1, Key2 extends Comp
 	public double percent;
 	
 	public RunReducer(String jarFileLocalPath, String reducerClassName,
-			String[] localInputPaths, String outputLocalPath) throws Exception {
+			String[] localInputPaths, String outputLocalPath, int dataNodeListeningPort) throws Exception {
 
+		Logger.log(jarFileLocalPath+":"+reducerClassName);
+		
 		this.reducerClass = (Class<Reducer<Key1, Value1, Key2, Value2>>) JarLoader.getClassFromJar(jarFileLocalPath, reducerClassName);
 		this.localInputPaths = localInputPaths;
 		this.outputLocalPath = outputLocalPath;
+		this.dataNodeListeningPort = dataNodeListeningPort;
 		this.heartBeatThread = new Thread(new TaskRunnerHeartBeatThread(this, dataNodeListeningPort));
 		this.percent = 0;
 	}
 
 	public void Run() {
 		try {
+			this.heartBeatThread.start();
 			ArrayList<KeyValuePair<Key1, Value1>> inputList = new ArrayList<KeyValuePair<Key1, Value1>>();
 			for(String path:localInputPaths){
 				FileInputStream fis = new FileInputStream(path);
@@ -43,15 +46,15 @@ public class RunReducer<Key1 extends Comparable<Key1>, Value1, Key2 extends Comp
 			}
 			//TODO merge sort
 			Collections.sort(inputList);
-				
-
+			
 			Reducer<Key1, Value1, Key2, Value2> r = reducerClass.newInstance();
 
+			Logger.log(outputLocalPath);
 			Context<Key2, Value2> context = new Context<Key2, Value2>(outputLocalPath);
 			Key1 previousKey = null;
 			ArrayList<Value1> valueList = null;
 			for(KeyValuePair<Key1, Value1> p: inputList){
-				if(previousKey == null || previousKey!=p.key){
+				if(previousKey == null || !previousKey.equals(p.key)){
 					if(valueList !=null)
 						r.reduce(previousKey, valueList, context);
 					
@@ -67,6 +70,8 @@ public class RunReducer<Key1 extends Comparable<Key1>, Value1, Key2 extends Comp
 				r.reduce(previousKey, valueList, context);
 			
 			context.dumpToFile();
+
+			this.percent = 100;
 		} catch (InstantiationException|IllegalAccessException e) {
 			Logger.log(e.getMessage());
 			e.printStackTrace();

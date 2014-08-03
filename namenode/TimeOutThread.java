@@ -8,7 +8,7 @@ public class TimeOutThread extends Thread{
 		while(true){
 			int i = 0;
 			for(DataNodeInfo d : NameNode.instance.dataNodeList){
-				if(Math.abs(d.getLastSeen()-System.currentTimeMillis())>10000){
+				if(Math.abs(d.getLastSeen()-System.currentTimeMillis())>conf.Constants.DATANODE_TIMEOUT){
 					Logger.log("Client "+ d.getId() + " TIMED OUT. Deleteing it.");
 					String id = d.getId();
 					d.shutDown();

@@ -34,7 +34,6 @@ public class FileRequestProcessor extends Thread{
 	public void run(){
 		try{
 			Message inMessage = Communicator.receiveMessage(socket);
-			Logger.log("received message: " + inMessage.type);
 			
 			if(inMessage.type.equals("add")){
 				
@@ -65,12 +64,9 @@ public class FileRequestProcessor extends Thread{
 
 				inMessage.fileSize = sendFile.length();
 				Communicator.sendMessage(socket, inMessage);
-				
 				BufferedInputStream bis = new BufferedInputStream(
 						new FileInputStream(DataNode.rootPath + (FileSystem.DIRECTORYSEPARATOR + blockName)));
-				
 				Communicator.sendStream(socket, bis, sendFile.length());
-				socket.close();
 			}
 			else if(inMessage.type.equals("sendFile")){
 				
@@ -130,10 +126,12 @@ public class FileRequestProcessor extends Thread{
 				TaskRunnerManager trm = DataNode.taskTrackerThread.getTaskRunnerManager(true);
 				if(trm==null){
 					//tell NameNode to gotohell
+					Logger.log("Nothing available");
 					return;
 				}
 				KeyListMessage klm = trm.LaunchInitTask( jarFileLocalPath, t.getMapperName(), blockLocalPath);
-				
+
+				Logger.log("out");
 				Communicator.sendMessage(socket, klm);
 				
 				socket.close();
@@ -154,9 +152,6 @@ public class FileRequestProcessor extends Thread{
 				trm.LaunchMapperTask( jarFileLocalPath, t.getMapperName(), blockLocalPath, t.getSplits(), t.getJob().getID(), t.getTaskID());				
 				socket.close();
 				
-			}else if(inMessage.type.equals("Heartbeat")){
-				HeartbeatMessage tm = (HeartbeatMessage) inMessage;
-				//DataNode.nameNode.sendUpdate(tm.jobId, tm.taskId, tm.complete, tm.percent);
 			}else if(inMessage.type.equals("ReducerTask")){
 				TaskMessage tm = (TaskMessage) inMessage;
 				ReducerTask t = (ReducerTask) tm.task;
@@ -177,7 +172,7 @@ public class FileRequestProcessor extends Thread{
 					m.fileName = "MAPPER_OUT_" + t.getJob().getID() + "_" + iter + "_" + t.getTaskID();
 					
 					
-					localPaths[iter] = m.fileName + "_";
+					localPaths[iter] = DataNode.rootPath + (FileSystem.DIRECTORYSEPARATOR + m.fileName + "_");
 					Socket socket = Communicator.CreateTaskSocket(clientKey);
 					Message fileSizeMessage = Communicator.sendAndReceiveMessage(socket, m);
 					Communicator.receiveFile(socket, localPaths[iter], fileSizeMessage.fileSize);
@@ -188,14 +183,14 @@ public class FileRequestProcessor extends Thread{
 				trm.LaunchReducerTask( jarFileLocalPath, t.getReducerName(), localPaths, t.getJob().getID(), t.getTaskID());				
 				socket.close();
 			} else if(inMessage.type.equals("MergeAndUpload")){
-				
+				Logger.log("\n\n\n\nMerge message\n\n\n");
 				MergeAndUploadMessage message = (MergeAndUploadMessage)inMessage;
 				
 				int iter = 0;
 				String[] splitPaths = new String[message.clients.length];
 				for(String clientKey: message.clients){
 					Message m = new Message("sendMeFile");
-					m.fileName = "REDUCER_OUT_" + message.jobId + "_" + iter;
+					m.fileName = "REDUCER_OUT_" + message.jobId + "_" + (iter+splitPaths.length-1)%splitPaths.length;
 					
 					splitPaths[iter] = DataNode.rootPath + (FileSystem.DIRECTORYSEPARATOR + "SPLIT_" + message.jobId + "_" + iter);
 					
@@ -208,7 +203,7 @@ public class FileRequestProcessor extends Thread{
 				FileMerge.mergeFiles(splitPaths, finalOutputLocalPath);
 				
 
-     			new Thread(new HDFSToLocal(finalOutputLocalPath, message.HDFSFilePath)).start();
+     			new Thread(new LocalToHDFS(finalOutputLocalPath, message.HDFSFilePath)).start();
 			}
 				
 				

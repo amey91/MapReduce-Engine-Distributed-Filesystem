@@ -24,14 +24,16 @@ public class RunMapper<Key extends Comparable<Key>, Value> {
 	String outputLocalPath;
 	Thread heartBeatThread;
 	public double percent;
+	Key[] splits;
 	
 	public RunMapper(String jarFileLocalPath, String mapperClassName, String blockLocalPath, 
-			String outputLocalPath, int dataNodeListeningPort) throws Exception{
+			String outputLocalPath, Key[] splits, int dataNodeListeningPort) throws Exception{
 		this.percent = 0;
 		this.mapperClass = (Class<Mapper<Key, Value> >) JarLoader.getClassFromJar(jarFileLocalPath, mapperClassName);
 		this.blockLocalPath = blockLocalPath;
 		this.outputLocalPath = outputLocalPath;
 		this.heartBeatThread = new Thread(new TaskRunnerHeartBeatThread(this,dataNodeListeningPort));
+		this.splits = splits;
 	}
 	
 	public void Run(){
@@ -48,7 +50,7 @@ public class RunMapper<Key extends Comparable<Key>, Value> {
 			// start HB thread after file is initialized
 			this.heartBeatThread.start();
 			
-			Context<Key, Value> context = new Context<Key, Value>(outputLocalPath);
+			Context<Key, Value> context = new Context<Key, Value>(outputLocalPath, splits);
 			
 			String line;
 			int lineNumber = 0;			
@@ -61,7 +63,7 @@ public class RunMapper<Key extends Comparable<Key>, Value> {
 				this.percent = (totalRead*1.0)/fileLength;
 			}			
 			context.dumpToFile();
-
+			this.percent = 100;
 			br.close();
 			br = null;
 			fis = null;	
@@ -70,7 +72,8 @@ public class RunMapper<Key extends Comparable<Key>, Value> {
 			Logger.log(e.getMessage());
 			e.printStackTrace();
 		}catch(Exception ex){
-			Logger.log("2"+ex.getMessage());
+			ex.printStackTrace();
+			Logger.log("45"+ex.getMessage());
 		}
 	}
 }

@@ -24,6 +24,7 @@ public class DataNode {
 	 * Listening port for incoming jobs
 	 */
 	static int fileListeningPort;
+	static String pathToClass ;
 	static int jobListeningPort;
 	static String myIp;
 	static ServerSocket jobSocket;
@@ -46,14 +47,18 @@ public class DataNode {
 
 	public static void main(String args[]) {
 				
-		if(args.length!=3)
+		if(args.length!=2)
 		{
-			// TODO Logger.log("Usage: DataNode <RMIRegistry> <bindname> <rootPath>");
-			Logger.log("Usage: DataNode <rootPath>");
-			// TODO 
-			// return;
+			Logger.log("Usage: DataNode <localRootPath> <pathToCodeRootDirectory>");
+			System.exit(-1);
 		}
-
+		
+		/*if(args[1].contentEquals(":")){
+			Logger.log("Usage: DataNode <localRootPath> <RMI_Registry:RMI_Port>");
+			//System.exit(-1);
+		}
+		*/
+		pathToClass = args[1];
 		try {
 			jobSocket = new ServerSocket(0);
 			fileSocket = new ServerSocket(0);
@@ -66,7 +71,7 @@ public class DataNode {
 			// nameNode.register(jobSocket.getInetAddress().getHostAddress(), DataNode.jobListeningPort,DataNode.fileListeningPort);
 			Registry registry = LocateRegistry.getRegistry("127.0.0.1");
 
-			nameNode = (NameNodeInterface) registry.lookup("RMI");
+			nameNode = (NameNodeInterface) registry.lookup(conf.Constants.RMI_SERVICE_NAME_1);
 
 			DataNode.key = DataNode.generateKey(fileListeningPort,jobListeningPort);
 			// Logger.log(nameNode.test());
@@ -112,7 +117,7 @@ public class DataNode {
 
 	private static int getNumberOfMappers() {
 		// default TODO change to 6 before submission
-		int cores = 1;
+		int cores = conf.Constants.NUMBER_OF_CORES;
 		File cpuInfo = new File("/proc/cpuinfo");
 		//check if AFS /proc/cpuinfo exists
 		if(!cpuInfo.exists()){

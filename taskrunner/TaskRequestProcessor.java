@@ -33,14 +33,16 @@ public class TaskRequestProcessor extends Thread {
 
 			case("MapperTask"):
 				mtm = (MapperTaskMessage) inMessage;
+				Logger.log("mtm splits:" + mtm.splits.length);
 				RunMapper rMapper  = new RunMapper(mtm.jarFileLocalPath, mtm.mapperClassName, mtm.blockLocalPath, 
-						mtm.outputLocalPath, TaskRunner.dataNodeListeningPort);
+						mtm.outputLocalPath, mtm.splits, TaskRunner.dataNodeListeningPort);
 				rMapper.Run();
 				break;
 
 			case("ReducerTask"):
 				ReducerTaskMessage rtm = (ReducerTaskMessage) inMessage;
-				RunReducer rReducer = new RunReducer(rtm.jarFileLocalPath, rtm.reducerClassName, rtm.localInputPaths, rtm.outputLocalPath);
+				RunReducer rReducer = new RunReducer(rtm.jarFileLocalPath, rtm.reducerClassName, 
+						rtm.localInputPaths, rtm.outputLocalPath, TaskRunner.dataNodeListeningPort);
 				rReducer.Run();
 				break;
 			

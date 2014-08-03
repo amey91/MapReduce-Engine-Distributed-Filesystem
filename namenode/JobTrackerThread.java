@@ -4,9 +4,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import mapreduce.Job;
-
 import commons.Logger;
-
 import filesystem.FileSystemException;
 
 public class JobTrackerThread extends Thread {
@@ -35,13 +33,13 @@ public class JobTrackerThread extends Thread {
 		while(true){
 			try{
 				for(JobTracker jt : tempJobs){
-					jt.run();
-					Logger.log(jt.jobName + " - run called");
 					runningJobs.put(jt.jobId, jt);
 					tempJobs.remove(jt);
+					jt.run();
+					Logger.log(jt.jobName + " - run called");
 				}
-				Thread.sleep(2000);
 
+				Thread.sleep(2000);
 			}catch(Exception e){
 
 			}
@@ -63,6 +61,8 @@ public class JobTrackerThread extends Thread {
 			Logger.log("tempjob: "+jt);
 		}
 	}
+	
+	
 
 	public void sendUpdate(String clientKey, Boolean isMapper, int jobId, int taskId,
 			double percentComplete, Boolean complete) {
@@ -72,6 +72,9 @@ public class JobTrackerThread extends Thread {
 			return;
 		}
 		jobTracker.report(clientKey, isMapper, taskId, percentComplete, complete);
+	}
+	public void remove(Integer jobId) {
+		runningJobs.remove(jobId);	
 	}
 
 }

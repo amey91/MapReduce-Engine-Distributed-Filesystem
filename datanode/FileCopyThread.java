@@ -62,7 +62,6 @@ public class FileCopyThread extends Thread{
 						throw new InterruptedException("failure: " + e.nodeLocation + " "  + e.parent.blockName);
 					}
 					else {
-						Logger.log("success: " + e.nodeLocation + " "  + e.parent.blockName);
 						additionQueue.remove(e);
 						e.report(true);
 					}
@@ -183,7 +182,6 @@ class DistFile{
 	
 	void report(Boolean success, String blockName){
 
-		Logger.log("File " + HDFSFilePath + success + blockName);
 		if(success == false){
 			try {
 				DataNode.nameNode.confirmLocalToHDFS(DataNode.key, false, HDFSFilePath, fileBlocks);
@@ -216,13 +214,12 @@ class DistFile{
 					fileBlocks[i].setSize(blocks[i].size);
 				//Got all confirmations, now send confirmation
 
-				Logger.log("sending confirmation");
 				DataNode.nameNode.confirmLocalToHDFS(DataNode.key, true, HDFSFilePath, fileBlocks);
 			}
 		} catch (RemoteException | FileSystemException e) {
 			// TODO delete
 			Logger.log(e.getMessage());
-			e.printStackTrace();
+			 
 		} catch (InvalidDataNodeException e) {
 			Logger.errLog("Invalid datanode. Resetting Datanode!");
 			DataNode.reset();
@@ -336,7 +333,7 @@ class SendingEntity{
 		} catch (RemoteException | InvalidDataNodeException | FileSystemException e) {
 			
 			Logger.log("Uhoh. Sending Failed in FileCopyThread. ");
-			e.printStackTrace();
+			 
 		}
 	}
 };

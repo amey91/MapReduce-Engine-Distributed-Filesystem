@@ -7,6 +7,7 @@ import java.io.RandomAccessFile;
 import java.net.Socket;
 
 import mapreduce.Context;
+import mapreduce.KeyValuePair;
 import mapreduce.Mapper;
 import commons.Logger;
 import communication.Communicator;
@@ -21,7 +22,8 @@ public class RunInit<Key extends Comparable<Key>, Value> {
 		try{
 			this.mapperClass = (Class<Mapper<Key, Value> >) JarLoader.getClassFromJar(jarFileLocalPath, mapperClassName);
 		} catch (Exception e) {
-			Logger.log("Eror while loading Jar file:");
+			Logger.log(jarFileLocalPath +"\n"+mapperClassName);
+			Logger.log(e.getMessage() + "Error while loading Jar file:");
 			e.printStackTrace();
 		}
 		this.blockLocalPath = blockLocalPath;

@@ -1,6 +1,10 @@
 package temperaturetest;
 // cc MaxTemperatureReducer Reducer for maximum temperature example
 // vv MaxTemperatureReducer
+
+// https://github.com/tomwhite/hadoop-book/tree/master/ch02
+	
+	
 import java.io.IOException;
 
 import mapreduce.Context;
@@ -17,6 +21,7 @@ public class MaxTemperatureReducer
     for (Integer value : values) {
       maxValue = Math.max(maxValue, value);
     }
+    // this is essential
     context.write(key, new Integer(maxValue));
   }
 }

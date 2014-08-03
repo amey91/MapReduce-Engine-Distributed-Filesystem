@@ -31,8 +31,6 @@ public class InitKeyValues {
 			InputStreamReader isr = new InputStreamReader(is);
 			BufferedReader br = new BufferedReader(isr);
 			String line;
-			System.out.printf("Output of running %s is:\n",
-					Arrays.toString(command));
 			while ((line = br.readLine()) != null) {
 				System.out.println(line);
 			}

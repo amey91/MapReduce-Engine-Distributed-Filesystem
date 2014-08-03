@@ -9,6 +9,7 @@ public class MergeAndUploadMessage extends Message {
 	public String[] clients;
 	public int jobId;
 	public String HDFSFilePath;
+	
 	public MergeAndUploadMessage(int jobId, String[] clients, String HDFSFilePath) {
 		super("MergeAndUpload");
 		this.jobId = jobId;

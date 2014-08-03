@@ -54,7 +54,7 @@ public class LocalToHDFS extends Thread {
 		} catch (FileSystemException | IOException e) {
 			// TODO delete 
 			Logger.log(e.getMessage());
-			e.printStackTrace();
+			 
 		} catch (InvalidDataNodeException e) {
 			DataNode.reset();
 		}
@@ -82,11 +82,9 @@ public class LocalToHDFS extends Thread {
 
 			divisions[no_of_blocks-1] -= divisions[divNo];
 			startLoc = newLoc;
-			Logger.log("div" + divNo+": " + divisions[divNo]);
 			divNo++;
 		}
 
-		Logger.log("div" + divNo+": " + divisions[divNo]);
 		is.close();
 		
 		return divisions;

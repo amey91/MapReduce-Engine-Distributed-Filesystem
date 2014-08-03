@@ -16,10 +16,7 @@ import filesystem.FileSystemException;
 
 // thread for managing user i/p on datanodes
 public class DataNodeConsoleThread extends Thread{
-	/*
-	 *  TODO implement:
-	 *  start, stop job, monitor
-	 */
+	
 	BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 	String choice;
 	String choices[];
@@ -53,7 +50,7 @@ public class DataNodeConsoleThread extends Thread{
          			if(!checkFileExists(localFilePath)){
          				throw new IOException(localFilePath + ": File does not exist");
          			}
-         			log("Uploading file to HDFS");
+         			Logger.log("Uploading file to HDFS");
          			new Thread(new LocalToHDFS(localFilePath,HDFSFilePath)).start();
          			break;
          			
@@ -65,7 +62,7 @@ public class DataNodeConsoleThread extends Thread{
      				localFilePath = choices[1];
      				HDFSFilePath = choices[2];
          			
-         			log("Uploading file to HDFS");
+     				Logger.log("Uploading file to HDFS");
          			new Thread(new HDFSToLocal(localFilePath,HDFSFilePath)).start();
          			break;
          			
@@ -117,16 +114,21 @@ public class DataNodeConsoleThread extends Thread{
          			// TODO
         			 break;
          		case("key"):
-         				log("my key: " + DataNode.key);
+         			Logger.log("my key: " + DataNode.key);
         			 break;
-        		// TODO delete xs
-         		case("x"):
-         		case("X"):
+        			 
+         		case("status"):
+         			String[] s = DataNode.nameNode.status();
+         			for(String st : s){
+         				Logger.log(st);
+         			}
+         			break;
+         		
          		case("destroy"):
          				DataNode.destroy();
          			break;
          		case("help"):
-         			log(	  "\n=================================================================="
+         			Logger.log(	  "\n=================================================================="
     						+ "\nPlease enter one of the following: (No spaces allowed in file name)"
     						+ "\n localToHDFS <localFilePath> <HDFSFilePath>"
     						+ "\n HDFSToLocal <localFilePath> <HDFSFilePath>"
@@ -138,6 +140,7 @@ public class DataNodeConsoleThread extends Thread{
     						+ "\n monitor"
     						+ "\n key"
     						+ "\n stophb "
+    						+ "\n monitor "
     						+ "\n destroy ");
          			break;
          		default:
@@ -150,7 +153,7 @@ public class DataNodeConsoleThread extends Thread{
 				Logger.log("Error while parsing input: "+e.getMessage());
 			} catch (FileSystemException e) {
 				Logger.log("FileSystem error.");
-				e.printStackTrace();
+				 
 			}
 		}//end of while
 	}
@@ -164,7 +167,7 @@ public class DataNodeConsoleThread extends Thread{
 			DataNode.nameNode.submitJob(DataNode.key, job);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			 
 		}
 		
 		
@@ -181,7 +184,7 @@ public class DataNodeConsoleThread extends Thread{
 		} catch (RemoteException | FileSystemException e) {
 			// TODO delete
 			Logger.log(e.getMessage());
-			e.printStackTrace();
+			 
 		}
 	}
 
@@ -192,7 +195,7 @@ public class DataNodeConsoleThread extends Thread{
 		} catch (RemoteException|FileSystemException e) {
 			// TODO delete
 			Logger.log(e.getMessage());
-			e.printStackTrace();
+			 
 		} 
 
 	}
@@ -201,9 +204,7 @@ public class DataNodeConsoleThread extends Thread{
 		try {
 			DataNode.nameNode.mkdir(DataNode.key,DFSFilePath);
 		} catch (RemoteException | FileSystemException e) {
-			// TODO delete
 			Logger.log(e.getMessage());
-			e.printStackTrace();
 		}
 	}
 	
@@ -215,8 +216,4 @@ public class DataNodeConsoleThread extends Thread{
 		return false;
 	}
 	
-	
-	private void log(String a){
-		System.out.println(a);
-	}
 }

@@ -1,4 +1,4 @@
-package temperaturetest;
+package wordcount;
 // cc MaxTemperatureReducer Reducer for maximum temperature example
 // vv MaxTemperatureReducer
 import java.io.IOException;

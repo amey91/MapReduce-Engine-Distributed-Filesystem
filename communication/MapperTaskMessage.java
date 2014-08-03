@@ -10,7 +10,7 @@ public class MapperTaskMessage extends Message {
 	public String mapperClassName;
 	public String blockLocalPath;
 	public String outputLocalPath;
-	Comparable<?>[] splits;
+	public Comparable<?>[] splits;
 
 	public MapperTaskMessage(String jarFileLocalPath, String mapperClassName, 
 			String blockLocalPath) {

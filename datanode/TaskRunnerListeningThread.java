@@ -23,9 +23,10 @@ public class TaskRunnerListeningThread extends Thread {
 	public void run(){
 		try {
 
-			Message inMessage = Communicator.receiveMessage(socket);Logger.log("received message: " + inMessage.type);
+			Message inMessage = Communicator.receiveMessage(socket);
+			//Logger.log("received message: " + inMessage.type);
 
-			Logger.log("Received message from taskRunner: " + inMessage.type);
+			//Logger.log("Received message from taskRunner: " + inMessage.type);
 			
 			if(inMessage.type.equals("TRConfirmation")){
 				
@@ -39,8 +40,7 @@ public class TaskRunnerListeningThread extends Thread {
 				
 			}
 		} catch (ClassNotFoundException | IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Logger.log("Class not found!");
 		}
 		
 	}

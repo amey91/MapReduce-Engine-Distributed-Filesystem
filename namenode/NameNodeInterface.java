@@ -39,5 +39,6 @@ public interface NameNodeInterface extends Remote{
 		public void Heartbeat(String key, long sizeOfFilesStored,
 				long freeSpace, int freeProcesses, int totalProcesses) throws RemoteException, InvalidDataNodeException;
 
+		public String[] status() throws RemoteException, InvalidDataNodeException;
 		
 }

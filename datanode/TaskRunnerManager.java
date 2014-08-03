@@ -3,13 +3,16 @@ import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
+import java.rmi.RemoteException;
 import java.util.Arrays;
 
+import namenode.InvalidDataNodeException;
 import commons.Logger;
 import communication.Communicator;
 import communication.KeyListMessage;
 import communication.MapperTaskMessage;
 import communication.ReducerTaskMessage;
+import filesystem.FileSystem;
 
 /*  @referred: http://www.xyzws.com/Javafaq/how-to-run-external-programs-by-using-java-processbuilder-class/189
  *  Launches a separate JVM with the specified path
@@ -35,6 +38,9 @@ public class TaskRunnerManager extends Thread {
 	Thread listeningThread;
 	long lastHeartBeat;
 	double percentCompletion;
+	Boolean isMapper = true;
+	int taskId;
+	int jobId;
 	
 	public TaskRunnerManager(String rootPath) throws IOException{
 		this.listeningSocket = new ServerSocket(0);
@@ -48,8 +54,9 @@ public class TaskRunnerManager extends Thread {
 		if(runningProcess!=null)
 			runningProcess.destroy();
 		try{
-			String[] command = {"java.exe","-cp", "C:/Users/Amey/workspace/example3", "taskrunner.TaskRunner", String.valueOf(this.listeningPort)};
+			String[] command = {"java.exe","-cp", DataNode.pathToClass , "taskrunner.TaskRunner", String.valueOf(this.listeningPort)};
 			//String[] command = {"java.exe","-cp", "E:/example/example3", "taskrunner.TaskRunner", String.valueOf(this.listeningPort)};
+			//String[] command = {"java.exe","-cp", DataNode.pathToClass, "taskrunner.TaskRunner", String.valueOf(this.listeningPort)};
 			// String[] command = {"java.exe","-cp", "./", "jobhandler.StartJob","testJobName","testrootpath","testclassName","args"};
 			ProcessBuilder probuilder = new ProcessBuilder( command );
 			//probuilder.directory(new File("c:/Temp"));
@@ -57,12 +64,11 @@ public class TaskRunnerManager extends Thread {
 			Process process = probuilder.start();
 			this.runningProcess = process;
 			
-			System.out.printf("Output of running %s is:\n",
-					Arrays.toString(command));
+			
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			 
 		}
 	}
 	
@@ -98,15 +104,19 @@ public class TaskRunnerManager extends Thread {
 	
 	public void LaunchMapperTask(String jarFileLocalPath, String mapperClassName, 
 			String blockLocalPath, Comparable<?>[] splits, int jobId, int taskId ) throws UnknownHostException, InterruptedException, IOException{
-		
+		isMapper = true;
 		if(!isReady)
 			throw new IOException("TaskRunner not ready yet");
 
 		lastHeartBeat = System.currentTimeMillis();
 		isRunning = true;
 		String outputLocalPath = "MAPPER_OUT_" + jobId + "_" + taskId;
+		Logger.log("dataNode splits:" + splits.length + "    "+ splits);
 		MapperTaskMessage mtm = new MapperTaskMessage(jarFileLocalPath, mapperClassName, splits, blockLocalPath, outputLocalPath);
 		Communicator.sendMessage("127.0.0.1", taskRunnerPort, mtm);
+		
+		this.jobId = jobId;
+		this.taskId = taskId;
 	}
 
 	public void HeartbeatFailed(){
@@ -123,8 +133,15 @@ public class TaskRunnerManager extends Thread {
 		this.taskRunnerPort = taskRunnerPort;
 	}
 
-	public void sendUpdate(double percent, Boolean complete) {
+	public void sendUpdate(double percent, Boolean complete) throws RemoteException {
 		lastHeartBeat = System.currentTimeMillis();
+
+		try {
+			DataNode.nameNode.sendUpdate(DataNode.key, isMapper, jobId, taskId, percent, complete);
+		} catch (InvalidDataNodeException e) {
+			DataNode.reset();
+		}
+		
 		if(complete)
 			MarkComplete();
 		percentCompletion = percent;
@@ -136,14 +153,14 @@ public class TaskRunnerManager extends Thread {
 
 	public void LaunchReducerTask(String jarFileLocalPath, String reducerName,
 			String[] localPaths, int jobId, int taskId) throws IOException, InterruptedException {
-		
+		isMapper = false;
 		if(!isReady)
 				throw new IOException("TaskRunner not ready yet");
 
 		lastHeartBeat = System.currentTimeMillis();
 		isRunning = true;
-		String outputLocalPath = "REDUCER_OUT_" + jobId + "_" + taskId;
-		ReducerTaskMessage rtm = new ReducerTaskMessage(jarFileLocalPath, mapperClassName, localPaths, outputLocalPath);
+		String outputLocalPath = DataNode.rootPath + (FileSystem.DIRECTORYSEPARATOR + "REDUCER_OUT_" + jobId + "_" + taskId);
+		ReducerTaskMessage rtm = new ReducerTaskMessage(jarFileLocalPath, reducerName, localPaths, outputLocalPath);
 		Communicator.sendMessage("127.0.0.1", taskRunnerPort, rtm);
 		
 	}

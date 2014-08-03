@@ -9,9 +9,7 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import mapreduce.Job;
-
 import commons.Logger;
-
 import conf.Constants;
 import filesystem.DistributedFile;
 import filesystem.FileBlock;
@@ -23,12 +21,16 @@ public class NameNode extends Thread implements NameNodeInterface {
 
 	public ArrayList<DataNodeInfo> dataNodeList = new ArrayList<DataNodeInfo>();
 
+
+
 	public int currentBlockNumber = 0;
 	public DeleteFileThread deleteThread;
+	public TaskQueueThread taskQueue;
+	//public JobQueue
 
 	static FileSystem fs = new FileSystem();
 	public static NameNode instance;
-	
+
 	JobTrackerThread jtThread;
 	private void checkKey(String clientKey) throws InvalidDataNodeException{
 		for(DataNodeInfo d: dataNodeList)
@@ -36,10 +38,10 @@ public class NameNode extends Thread implements NameNodeInterface {
 				return;
 		throw new InvalidDataNodeException();
 	}
-	
+
 	private NameNode(){
 	}
-	
+
 	public ArrayList<String> ls(String clientKey, String dirPath)throws RemoteException, FileSystemException, InvalidDataNodeException{
 		checkKey(clientKey);
 
@@ -95,7 +97,6 @@ public class NameNode extends Thread implements NameNodeInterface {
 	public void confirmLocalToHDFS(String clientKey, Boolean success, String fileName, FileBlock[] blocks)throws RemoteException, FileSystemException, InvalidDataNodeException{
 		checkKey(clientKey);
 
-		Logger.log("Inside confirmlocaltohdfs: " + clientKey + " " + success + " " + fileName);
 		if(success){
 			DistributedFile file = new DistributedFile(blocks);
 			fs.InsertFile(fileName, file);
@@ -110,10 +111,10 @@ public class NameNode extends Thread implements NameNodeInterface {
 			if(d.getId().equals(clientKey)){
 				if(!success)
 					fs.RemoveFileProxy(fileName);
-				
+
 				d.deleteTempFileBlock(blocks);
 				d.deleteFileProxy(fileName);
-				
+
 			}
 		}
 
@@ -136,7 +137,7 @@ public class NameNode extends Thread implements NameNodeInterface {
 	@Override
 	public void Heartbeat(String clientKey, long sizeOfStoredFiles, long freeSpace, 
 			int freeProcesses, int totalProcesses) throws RemoteException, InvalidDataNodeException {
-		
+
 		checkKey(clientKey);
 
 		for(DataNodeInfo d : dataNodeList){
@@ -151,7 +152,7 @@ public class NameNode extends Thread implements NameNodeInterface {
 					break;
 				}
 			}
-			
+
 		}
 	}
 
@@ -166,22 +167,25 @@ public class NameNode extends Thread implements NameNodeInterface {
 		try{
 			//@referred http://docs.oracle.com/javase/7/docs/technotes/guides/rmi/hello/hello-world.html#define`
 
-			instance = new NameNode();			 
+			instance = new NameNode();		 
 			NameNodeInterface stub = (NameNodeInterface) UnicastRemoteObject.exportObject(instance, 0);
 
 
 			// Bind the remote object's stub in the registry
 			Registry registry = LocateRegistry.getRegistry();
-			registry.rebind("RMI", stub);
+			registry.rebind(conf.Constants.RMI_SERVICE_NAME_1, stub);
 			System.err.println("Server ready");
 			new Thread(new NameNodeConsoleThread()).start();
 			new Thread(new TimeOutThread()).start();
-			
+
 			instance.deleteThread =  new DeleteFileThread();
 			instance.deleteThread.start();
 			instance.jtThread = new JobTrackerThread();
 			instance.jtThread.start();
-			
+			instance.taskQueue = new TaskQueueThread();
+			instance.taskQueue.start();
+
+
 		} catch(Exception e){
 			System.out.println("Server exception: " + e.toString());
 			e.printStackTrace();
@@ -216,7 +220,7 @@ public class NameNode extends Thread implements NameNodeInterface {
 			for(int i=0;i<Constants.REPLICATION_FACTOR*no_of_blocks;i++){
 				if(!iter.hasNext())
 					iter = dataNodeList.iterator();
-				
+
 				allocation[(i/Constants.REPLICATION_FACTOR)%no_of_blocks].addNodeLocation(iter.next().getId());
 			}
 			//allocation[0] = new FileBlock(DFSFileName+"_"+NameNode.currentBlockNumber++, allocatedBlocks);
@@ -246,7 +250,7 @@ public class NameNode extends Thread implements NameNodeInterface {
 	public FileBlock[] getFileBlocks(String clientKey, String HDFSFilePath)
 			throws FileSystemException, RemoteException, InvalidDataNodeException {
 		checkKey(clientKey);
-		
+
 		return NameNode.fs.getFileBlocks(HDFSFilePath);
 	}
 
@@ -254,9 +258,9 @@ public class NameNode extends Thread implements NameNodeInterface {
 	public ArrayList<String> getNewLocations(String clientKey, ArrayList<String> doneList,
 			ArrayList<String> failList) throws RemoteException,
 			InvalidDataNodeException, FileSystemException {
-		
+
 		checkKey(clientKey);
-		
+
 		Collections.sort(dataNodeList);
 		int numRequired = failList.size();
 		ArrayList<String> returnList = new ArrayList<String>();
@@ -272,27 +276,33 @@ public class NameNode extends Thread implements NameNodeInterface {
 		else
 			return returnList;
 	}
-
+	static int p=0;
 	public String findExecuteLocation(String[] nodeLocations) throws InvalidDataNodeException {		
 		// if block is present on node and there is space left, select that node
 		// check for all replication factors of the block
+		p = (p+1)%nodeLocations.length;
+		if(true)return nodeLocations[p];
 		int free = 0;
 		String destination = null;
+		int nodeFreeProcesses;
 		for(int i = 0; i<nodeLocations.length;i++){
 			checkKey(nodeLocations[i]);
-			int nodeFreeProcesses =dataNodeList.get(dataNodeList.indexOf(nodeLocations[i])).getFreeProcesses(); 
+			nodeFreeProcesses = -1;
+			for(int j=0;j<dataNodeList.size();j++)
+				if(dataNodeList.get(j).equals(nodeLocations[i]))
+					nodeFreeProcesses = dataNodeList.get(j).getFreeProcesses(); 
 			// choose most free
 			if(free < nodeFreeProcesses){
 				free = nodeFreeProcesses;
 				destination = nodeLocations[i];
 			}
 		}
-		if(free != 0 && !destination.equals(null))
+		if(free > 0 && !destination.equals(null))
 			return destination;
-		
+
 		if(destination.equals(null))
 			throw new InvalidDataNodeException("Null key found in scheduler algorithm");
-		
+
 		// if a node that does not have block is free, allocate
 		free = 0;
 		destination = null;
@@ -303,21 +313,34 @@ public class NameNode extends Thread implements NameNodeInterface {
 				destination = d.getId();
 			}
 		}
-		
+
 		if(free !=0 && !destination.equals(null))
 			return destination;
 		if(destination.equals(null))
 			throw new InvalidDataNodeException("Null key found in scheduler algorithm");
 		// if no nodes are free, enque job 
-		
+
 		return "-1";
 	}
 
 	@Override
-	public void sendUpdate(String clientKey, Boolean mapperOrReducer, int jobId, int taskId,
+	public void sendUpdate(String clientKey, Boolean isMapper, int jobId, int taskId,
 			double percentComplete, Boolean complete) throws RemoteException, InvalidDataNodeException {
 		checkKey(clientKey);
-		jtThread.sendUpdate(clientKey, mapperOrReducer, jobId, taskId, percentComplete, complete);		
+		Logger.log("update: " + clientKey+ isMapper +taskId+" "+percentComplete+complete);
+		jtThread.sendUpdate(clientKey, isMapper, jobId, taskId, percentComplete, complete);		
 	}
+
+	@Override
+	public String[] status() throws RemoteException, InvalidDataNodeException {
+		String[] info = new String[instance.jtThread.runningJobs.size()];
+		for(int i =0;  i< info.length; i++){
+			info[i] = instance.jtThread.runningJobs.get(i).toString();
+		}
+		return info;
+		
+	}
+
+
 
 }

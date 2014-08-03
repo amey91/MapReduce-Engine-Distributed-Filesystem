@@ -15,7 +15,7 @@ public class TaskRunner {
 	public static void main(String[] args){
 		try {
 		    System.setOut(new PrintStream(new File("C:/Temp/dump.txt")));
-		    System.setErr(new PrintStream(new File("C:/Temp/dump.txt")));
+		    System.setErr(new PrintStream(new File("C:/Temp/dump2.txt")));
 		} catch (Exception e) {
 		     e.printStackTrace();
 		}

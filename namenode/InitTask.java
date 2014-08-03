@@ -8,7 +8,6 @@ import commons.Logger;
 import communication.Communicator;
 import communication.KeyListMessage;
 import communication.TaskMessage;
-
 import conf.Constants;
 import filesystem.FileBlock;
 import filesystem.FileSystemException;
@@ -43,6 +42,9 @@ public class InitTask extends Task {
 
 		int iter = 0;
 		int totalArrayLength = 0;
+		
+		Logger.log("INIT TASK STARTING");
+
 		for(FileBlock currBlock : blocks ){
 			Socket socket;
 			try {
@@ -51,7 +53,9 @@ public class InitTask extends Task {
 
 				//block name actually
 				m.fileName = currBlock.getBlockFileName();
+				Logger.log("sending message");
 				keys = (KeyListMessage)Communicator.sendAndReceiveMessage(socket, m);
+				Logger.log("sent message");
 				
 				arr[iter] = keys.keyList;
 

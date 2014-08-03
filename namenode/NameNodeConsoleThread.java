@@ -35,7 +35,6 @@ public class NameNodeConsoleThread extends Thread{
          		}
 			} catch(Exception e){
 				Logger.log(e.getMessage());
-				Logger.log("NameNode only accepts 5 as input... \n");
 			}//end of try
 		}//end of while
 	}

@@ -16,7 +16,6 @@ public class TaskRunnerHeartBeatThread extends Thread {
 
 	public TaskRunnerHeartBeatThread(Object runner, int dataNodeListeningPort) throws UnknownHostException, IOException {
 		this.dataNodeListeningPort = dataNodeListeningPort;
-		
 		this.parentMapper = null;
 		this.parentReducer = null;
 		if(runner instanceof RunMapper)
@@ -39,7 +38,8 @@ public class TaskRunnerHeartBeatThread extends Thread {
 				}
 				HeartbeatMessage message = new HeartbeatMessage(currPercent, false);
 				Communicator.sendMessage(heartBeatSocket, message);
-				Thread.sleep(1000);}
+				Thread.sleep(1000);
+			}
 			catch(Exception e){
 				Logger.log("Error in task runner heartbeat.");
 				e.printStackTrace();
